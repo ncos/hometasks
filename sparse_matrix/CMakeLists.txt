@@ -8,3 +8,6 @@ include_directories(EIGEN3_INCLUDE_DIR)
 
 set(SRCS src/main.cpp src/mlib.cpp src/mlib.h)
 add_executable(spmatrix ${SRCS})
+
+set(SRCS src/matgen.cpp)
+add_executable(matgen ${SRCS})

@@ -1,26 +1,20 @@
 #include "mlib.h"
 
 
-Eigen::MatrixXd from_file(std::string fname) {
 
 
-};
+Eigen::VectorXd vec_from_file (std::string fname) {
+    std::ifstream file (fname.c_str(), std::ios::in);
+    Eigen::VectorXd vec;
 
-void to_file (Eigen::MatrixXd mat, std::string fname) {
-    if (mat.rows() != mat.cols()) {
-        std::cerr << "The matrix is not square! (" << mat.rows() << "x" << mat.cols() << ")";
-    }
-    if (mat.rows() < 1) {
-        std::cerr << "The matrix is too small! (" << mat.rows() << "x" << mat.cols() << ")";
-    }
-
-    std::ofstream file (fname.c_str(), std::ios::out);
     if (file.is_open()) {
-        std::cout << "Successfully opened '" << fname << "' for writing...\n";
-        file << mat.rows() << "\n";
-        for (uint64 i = 0; i < mat.rows(); ++i)
-            for (uint64 j = 0; j < mat.cols(); ++j)
-                file << mat(i, j) << "\n";
+        std::cout << "Successfully opened '" << fname << "' for reading...\n";
+        uint64 n;
+        file >> n;
+        std::cout << "Reading a vector of size " << n << "...\n";
+        vec = Eigen::VectorXd(n);
+        for (uint64 i = 0; i < n; ++i)
+            file >> vec(i);
 
         file.close();
         std::cout << "...Complete!\n";
@@ -29,22 +23,37 @@ void to_file (Eigen::MatrixXd mat, std::string fname) {
     else {
         std::cerr << "Unable to open file '" << fname << "'\n";
     }
+
+    return vec;
 };
 
-Eigen::MatrixXd generate_matrix(int64 size) {
-    Eigen::MatrixXd  mat(size, size);
-    Eigen::MatrixXd Tmat(size, size);
-    std::srand(std::time(0)); // use current time as seed for random generator
 
-    for (uint64 i = 0; i < mat.rows(); ++i)
-        for (uint64 j = 0; j < mat.cols(); ++j)
-            mat(i, j) = double(std::rand() - (RAND_MAX / 2)) / 10000000.0;
+matVec mat_vec_from_file(std::string fname) {
+    std::ifstream file (fname.c_str(), std::ios::in);
+    matVec mat_vec;
 
-    Tmat = mat.transpose();
-    return Tmat*mat;
+    if (file.is_open()) {
+        std::cout << "Successfully opened '" << fname << "' for reading...\n";
+        uint64 n;
+        file >> n;
+        std::cout << "Reading a matrix of size " << n << "x" << n << "...\n";
+        mat_vec.mat = Eigen::MatrixXd(n, n);
+        mat_vec.vec = Eigen::VectorXd(n);
+        for (uint64 i = 0; i < n; ++i)
+            for (uint64 j = 0; j < n; ++j) {
+                file >> mat_vec.mat(i, j);
+            }
+        std::cout << "Reading a vector of size " << n << "...\n";
+        for (uint64 i = 0; i < n; ++i)
+            file >> mat_vec.vec(i);
+
+        file.close();
+        std::cout << "...Complete!\n";
+    }
+
+    else {
+        std::cerr << "Unable to open file '" << fname << "'\n";
+    }
+
+    return mat_vec;
 };
-
-Eigen::MatrixXd generate_matrix_eigenvalues(Eigen::VectorXd) {
-
-};
-
