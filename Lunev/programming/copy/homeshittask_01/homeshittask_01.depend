@@ -1,0 +1,51 @@
+# depslib dependency file v1.0
+1378928251 source:/randomstaff/Dropbox/Hometasks/Programming/ht_01/homeshittask_01/copy.cpp
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	<fcntl.h>
+	<string.h>
+	<dirent.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<assert.h>
+
+1378960994 source:/randomstaff/Dropbox/Hometasks/Programming/ht_01/homeshittask_01/copy_2.cpp
+	"copy.h"
+
+1378959882 /randomstaff/Dropbox/Hometasks/Programming/ht_01/homeshittask_01/copy.h
+	<iostream>
+	<stdio.h>
+	<stdlib.h>
+	<fcntl.h>
+	<unistd.h>
+	<cstdio>
+	<sys/types.h>
+	<sys/stat.h>
+	<string.h>
+
+1378928251 source:/home/viki/Desktop/Dropbox/Hometasks/Programming/ht_01/homeshittask_01/copy.cpp
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	<fcntl.h>
+	<string.h>
+	<dirent.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<assert.h>
+
+1378961257 source:/home/viki/Desktop/Dropbox/Hometasks/Programming/ht_01/homeshittask_01/copy_2.cpp
+	"copy.h"
+
+1378959882 /home/viki/Desktop/Dropbox/Hometasks/Programming/ht_01/homeshittask_01/copy.h
+	<iostream>
+	<stdio.h>
+	<stdlib.h>
+	<fcntl.h>
+	<unistd.h>
+	<cstdio>
+	<sys/types.h>
+	<sys/stat.h>
+	<string.h>
+
