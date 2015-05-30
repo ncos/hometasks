@@ -10,8 +10,8 @@ using std::endl;
 
 double A = 1.0;
 double B = 1.7;
-double D1 = 0.008;
-double D2 = 0.01;
+double D1 = 0.0;
+double D2 = 0.0;
 double eps = 1;
 double w = 20;
 double XMIN = 0;
@@ -67,18 +67,18 @@ double scheme_v(int m, int n, Data& data) {
 
 
 int main(int argc, char **argv){
-    int width = 600;
+    int width = 100;
     double dh = double(XMAX - XMIN)/double(width);
     double gamma = (D2 == 0) ? 1 : D2;
     double dt = 2*dh*dh/(gamma*40);
     int height = ceil(double(TMAX - TMIN)/dt);
     std::cout << "dh: " << dh << " dt: " << dt << "\n";
 
-    double mew = A*sqrt(D1/D2);
-    //double mew = A;
+    //double mew = A*sqrt(D1/D2);
+    double mew = A;
     std::cout << "mew = " << mew << "\n\n";
 
-    B = 1 + pow(mew, 2.0) + 0.5;
+    B = 1 + pow(mew, 2.0) - 0.5;
 
     Data tab;
     tab.init(width, height, dh, dt);
