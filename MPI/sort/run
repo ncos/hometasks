@@ -1,0 +1,2 @@
+#!/bin/bash
+mpirun -np 1 sort.bin 10000000

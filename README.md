@@ -1,4 +1,4 @@
 hometasks
 =========
 
-This is for MIPT IT dept hometasks
+All CS hometasks I was ever assigned
