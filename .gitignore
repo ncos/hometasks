@@ -2,6 +2,7 @@
 *.o
 *.exe
 *.bin
+*.pyc
 /Java/Molecule/nbproject/private/
 /Java/Molecule/build/
 /Java/Molecule/dist/
