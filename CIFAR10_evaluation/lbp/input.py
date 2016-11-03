@@ -4,10 +4,27 @@ import matplotlib.pyplot as plt
 import cPickle as pickle
 import numpy as np
 import os, random
+from skimage import feature
+
 
 plt.rcParams['figure.figsize'] = (10.0, 8.0)
 plt.rcParams['image.interpolation'] = 'nearest'
 plt.rcParams['image.cmap'] = 'gray'
+
+ 
+class LocalBinaryPatterns:
+	def __init__(self, numPoints, radius):
+		# store the number of points and radius
+		self.numPoints = numPoints
+		self.radius = radius
+ 
+	def describe(self, image, eps=1e-7):
+		lbp = feature.local_binary_pattern(image, self.numPoints,
+			self.radius, method="uniform")
+		return lbp
+
+lbpConv = LocalBinaryPatterns(8, 1);
+
 
 def load_CIFAR_batch(filename):
   """ load single batch of cifar """
@@ -18,6 +35,9 @@ def load_CIFAR_batch(filename):
     X = X.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("float")
     Y = np.array(Y)
     return X, Y
+
+
+
 
 def load_CIFAR10(ROOT):
   """ load all of cifar """
@@ -32,6 +52,42 @@ def load_CIFAR10(ROOT):
   Ytr = np.concatenate(ys)
   del X, Y
   Xte, Yte = load_CIFAR_batch(os.path.join(ROOT, 'test_batch'))
+
+
+  images_r_te = []
+  images_g_te = []
+  images_b_te = []
+  images_r_tr = []
+  images_g_tr = []
+  images_b_tr = []
+  for i in xrange(Xte.shape[0]):
+    images_r_te.append(Xte[i][[[[e] for e in xrange(32)],xrange(32),[0]]])
+    images_g_te.append(Xte[i][[[[e] for e in xrange(32)],xrange(32),[1]]])
+    images_b_te.append(Xte[i][[[[e] for e in xrange(32)],xrange(32),[2]]])
+
+  for i in xrange(Xtr.shape[0]):
+    images_r_tr.append(Xtr[i][[[[e] for e in xrange(32)],xrange(32),[0]]])
+    images_g_tr.append(Xtr[i][[[[e] for e in xrange(32)],xrange(32),[1]]])
+    images_b_tr.append(Xtr[i][[[[e] for e in xrange(32)],xrange(32),[2]]])
+
+
+  images_r_te_lbp = [lbpConv.describe(img) for img in images_r_te]
+  images_g_te_lbp = [lbpConv.describe(img) for img in images_g_te]
+  images_b_te_lbp = [lbpConv.describe(img) for img in images_b_te]
+
+  images_r_tr_lbp = [lbpConv.describe(img) for img in images_r_tr]
+  images_g_tr_lbp = [lbpConv.describe(img) for img in images_g_tr]
+  images_b_tr_lbp = [lbpConv.describe(img) for img in images_b_tr]
+
+
+    
+  for i in xrange(Xte.shape[0]):
+    Xte[i] = np.append(images_r_te_lbp[i][:,:,np.newaxis], np.append(images_g_te_lbp[i][:,:,np.newaxis], images_b_te_lbp[i][:,:,np.newaxis], axis=2), axis=2)
+  
+  for i in xrange(Xtr.shape[0]):
+    Xtr[i] = np.append(images_r_tr_lbp[i][:,:,np.newaxis], np.append(images_g_tr_lbp[i][:,:,np.newaxis], images_b_tr_lbp[i][:,:,np.newaxis], axis=2), axis=2)
+ 
+
   return Xtr, Ytr, Xte, Yte
 
 classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']

@@ -4,8 +4,9 @@ from input import *
 #from ggplot import *
 import numpy as np
 import time
+from random import *
 
-from algorithms.classifiers.linear_classifier import SVM
+from linear_classifier import SVM
 
 def loss_grad_svm_vectorized(W, X, y, reg):
     """
@@ -105,17 +106,17 @@ grad_numerical = grad_check_sparse(f, W, grad_vect, 10)
 
 
 # # using SGD algorithm
-SVM_sgd = SVM()
-tic = time.time()
-losses_sgd = SVM_sgd.train(X_train, y_train, method='sgd', batch_size=200, learning_rate=1e-6,
-              reg = 1e5, num_iters=1000, verbose=True, vectorized=True)
-toc = time.time()
-print 'Traning time for SGD with vectorized version is %f \n' % (toc - tic)
+#SVM_sgd = SVM()
+#tic = time.time()
+#losses_sgd = SVM_sgd.train(X_train, y_train, method='sgd', batch_size=200, learning_rate=1e-6,
+#              reg = 1e5, num_iters=1000, verbose=True, vectorized=True)
+#toc = time.time()
+#print 'Traning time for SGD with vectorized version is %f \n' % (toc - tic)
 
-y_train_pred_sgd = SVM_sgd.predict(X_train)[0]
-print 'Training accuracy: %f' % (np.mean(y_train == y_train_pred_sgd))
-y_val_pred_sgd = SVM_sgd.predict(X_val)[0]
-print 'Validation accuracy: %f' % (np.mean(y_val == y_val_pred_sgd))
+#y_train_pred_sgd = SVM_sgd.predict(X_train)[0]
+#print 'Training accuracy: %f' % (np.mean(y_train == y_train_pred_sgd))
+#y_val_pred_sgd = SVM_sgd.predict(X_val)[0]
+#print 'Validation accuracy: %f' % (np.mean(y_val == y_val_pred_sgd))
 
 
 #qplot(xrange(len(losses_sgd)), losses_sgd) + labs(x='Iteration number', y='SGD Loss value')
@@ -123,7 +124,7 @@ print 'Validation accuracy: %f' % (np.mean(y_val == y_val_pred_sgd))
 
 
 
-# Using validation set to tuen hyperparameters, i.e., learning rate and regularization strength
+# Using validation set to tune hyperparameters, i.e., learning rate and regularization strength
 learning_rates = [1e-5, 1e-8]
 regularization_strengths = [10e2, 10e4]
 
