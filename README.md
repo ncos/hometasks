@@ -1,4 +1,4 @@
 hometasks
 =========
 
-All CS hometasks I was ever assigned
+Some CS hometasks - for history and for future reference
