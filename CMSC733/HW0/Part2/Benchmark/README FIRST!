@@ -1,0 +1,4 @@
+README FIRST!
+
+(1) Run your code on all Test Images and save the outputs in the folder Benchmark/data/mypb using imwrite command (Refer to Benchmark.m in stencil folder for exact syntax).
+(2) Run the Benchmark.m from stencil folder (Be sure to do change path and not add to path!!!!).
