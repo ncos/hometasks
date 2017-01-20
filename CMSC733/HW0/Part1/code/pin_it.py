@@ -23,16 +23,15 @@ class PinIt:
 
     def denoise(image):
         image_smth = image
-        self.options.:
+        if (self.options.NlMeans):
             image_smth = cv2.fastNlMeansDenoisingColored(image, templateWindowSize=7,
                                                       searchWindowSize=21,
                                                       h=3,
                                                       hColor=10)
-        else:
+        if (self.options.BLT):
             image_smth = cv2.bilateralFilter(image, 5, 50, 50)
 
        
-
 
 
 
@@ -40,6 +39,8 @@ def convert(src, dst):
     bgr = cv2.imread(src, cv2.IMREAD_COLOR)
     denoised = denoise(bgr)
     cv2.imwrite(dst, denoised)
+
+
 
 if __name__ == '__main__':
     class MyParser(OptionParser):
