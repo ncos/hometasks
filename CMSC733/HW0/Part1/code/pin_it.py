@@ -7,6 +7,47 @@ from os.path import isfile, join
 import sys, os, math
 
 
+# Color print
+class bcolors:
+    HEADER = '\033[95m'
+    PLAIN = '\033[37m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
+def offset(str_, p_offset):
+    for i in xrange(p_offset):
+        str_ = '...' + str_
+    return str_
+
+def hdr(str_, p_offset=0):
+    return offset(bcolors.HEADER + str_ + bcolors.ENDC, p_offset)
+
+def wht(str_, p_offset=0):
+    return offset(bcolors.PLAIN + str_ + bcolors.ENDC, p_offset)
+
+def okb(str_, p_offset=0):
+    return offset(bcolors.OKBLUE + str_ + bcolors.ENDC, p_offset)
+
+def okg(str_, p_offset=0):
+    return offset(bcolors.OKGREEN + str_ + bcolors.ENDC, p_offset)
+
+def wrn(str_, p_offset=0):
+    return offset(bcolors.WARNING + str_ + bcolors.ENDC, p_offset)
+
+def err(str_, p_offset=0):
+    return offset(bcolors.FAIL + str_ + bcolors.ENDC, p_offset)
+
+def bld(str_, p_offset=0):
+    return offset(bcolors.BOLD + str_ + bcolors.ENDC, p_offset)
+    
+
+# File manipulation
 class OSHelpers:
     @staticmethod
     def ensure_dir(f):
@@ -23,8 +64,11 @@ class OSHelpers:
             mat = np.load(join(db_path, file_name))
         except:
             print "Error reading file " + file_name + " at " + db_path
+            return
         return mat
 
+
+# Core
 class PinIt:
     def __init__(self, arg_parser):
         (self.options, self.args) = arg_parser.parse_args()
@@ -154,9 +198,9 @@ class PinIt:
         mean_vecs = [OSHelpers.get_db_numpy(p, 'mean.npy') for p in class_paths]
         cov_mats  = [OSHelpers.get_db_numpy(p, 'cov.npy' ) for p in class_paths]
        
-        mask_images = []
+        mask_images = {}
         for id_, name in enumerate(class_names):
-            print "Processing class " + name
+            print bld(wrn("\n\nProcessing class " + name))
             print "Mean vec:\n" + str(mean_vecs[id_])
             print "\nCovariance matrix:\n" + str(cov_mats[id_])
             
@@ -167,30 +211,37 @@ class PinIt:
                 continue
             
             mask_image = np.zeros((height,width))
-            target_mask_image = np.zeros((height,width))
-            target_pixels = []
 
             for i in xrange(height):
                 for j in xrange(width):
                     error = image[i, j] - mean_vecs[id_]
                     mask_image[i, j] = math.exp(-1.0 * error.dot(inv_cov_mat.dot(error)) / 2.0)  
-                    if (mask_image[i, j] > 0.7):
-                        target_mask_image[i, j] = 1.0
-                        target_pixels.append([i, j])
 
-            mask_images.append(mask_image)
-            cv2.imwrite('./' + name + "_class.jpg", mask_image)
+            mask_images[name] = mask_image
+            #cv2.imwrite('./' + name + "_class.jpg", mask_image)
 
-            minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(mask_image)
-            print minVal, maxVal, minLoc, maxLoc
-            cv2.imshow("Class: " + name, np.concatenate((target_mask_image, mask_image), axis=0));
+        box_img = image
+        colormap = {'red': (0,0,255), 'green': (0,255,0), 'blue': (255,0,0), 
+                    'yellow': (0,255,255), 'white': (255,255,255), 'transparent': (0,0,0)}
+        total_pins = 0
+        for name in mask_images.keys():
+            print name + ": " + str(cv2.minMaxLoc(mask_images[name]))
+            ret, bin_mask = cv2.threshold(np.uint8(mask_images[name] * 255), 70, 255, cv2.THRESH_BINARY)
+            kernel = np.ones((5,5),np.uint8)
+            bin_mask = cv2.erode(bin_mask, kernel, iterations = 1)
+            bin_mask = cv2.dilate(bin_mask, kernel, iterations = 5)
+            cv2.imshow(name + " probablilities: ", np.concatenate((mask_images[name], bin_mask)))
             
-        for i in range (1, len(mask_images)):
-            mask_images[0] = mask_images[0] * (np.ones_like(mask_images[i]) - mask_images[i])
-        cv2.imshow("Test: ",  mask_images[0])
+            box_img, cnt = self.do_box_stuff(box_img, bin_mask, colormap[name])
+            print okb("Found " + str(cnt) + " " + name + " pins")
+            total_pins += cnt
+
+        print okb("Total number of pins: " + str(total_pins))
+        cv2.imshow("Box image ", box_img)
         cv2.waitKey(0);
 
 
+# Dispatcher
 if __name__ == '__main__':
     class MyParser(OptionParser):
         def format_epilog(self, formatter):
