@@ -91,6 +91,10 @@ class PinIt:
         if (self.options.pinit_method == 'G3D'):
             self.gaussian3D(denoised)
 
+        if (self.options.pinit_method == 'GMM'):
+            self.gaussianGMM(denoised)
+
+
 
     def denoise(self, image):
         image_smth = image
@@ -189,16 +193,9 @@ class PinIt:
         cv2.waitKey(0);
 
 
-    def gaussian3D(self, image):
-        height, width, channels = image.shape 
-        
-        class_paths, class_names = OSHelpers.get_db_folders(self.options.db_root_path)
-        print "Found classes: " + str(class_names)
-
-        mean_vecs = [OSHelpers.get_db_numpy(p, 'mean.npy') for p in class_paths]
-        cov_mats  = [OSHelpers.get_db_numpy(p, 'cov.npy' ) for p in class_paths]
-       
+    def gaussian3D_base(self, image, class_names, mean_vecs, cov_mats):
         mask_images = {}
+        height, width, channels = image.shape 
         for id_, name in enumerate(class_names):
             print bld(wrn("\n\nProcessing class " + name))
             print "Mean vec:\n" + str(mean_vecs[id_])
@@ -218,7 +215,16 @@ class PinIt:
                     mask_image[i, j] = math.exp(-1.0 * error.dot(inv_cov_mat.dot(error)) / 2.0)  
 
             mask_images[name] = mask_image
-            #cv2.imwrite('./' + name + "_class.jpg", mask_image)
+        return mask_images
+
+
+    def gaussian3D(self, image):
+        class_paths, class_names = OSHelpers.get_db_folders(self.options.db_root_path)
+        print "Found classes: " + str(class_names)
+
+        mean_vecs = [OSHelpers.get_db_numpy(p, 'mean.npy') for p in class_paths]
+        cov_mats  = [OSHelpers.get_db_numpy(p, 'cov.npy' ) for p in class_paths]
+        mask_images = self.gaussian3D_base(image, class_names, mean_vecs, cov_mats)
 
         box_img = image
         colormap = {'red': (0,0,255), 'green': (0,255,0), 'blue': (255,0,0), 
@@ -241,6 +247,53 @@ class PinIt:
         cv2.waitKey(0);
 
 
+    def gaussianGMM(self, image):
+        class_paths, class_names = OSHelpers.get_db_folders(self.options.db_root_path)
+        print "Found classes: " + str(class_names)
+
+        # that's an ugly workaround...
+        mean_names = [f for f in os.listdir(class_paths[0]) if ("mean_kmeans" in f)]
+        cov_names = [f for f in os.listdir(class_paths[0]) if ("cov_kmeans" in f)]
+        
+        mask_images_all = {}
+        for m_name, c_name in zip(mean_names, cov_names):
+            mean_vecs = [OSHelpers.get_db_numpy(p, m_name) for p in class_paths]
+            cov_mats  = [OSHelpers.get_db_numpy(p, c_name) for p in class_paths]
+            mask_images = self.gaussian3D_base(image, class_names, mean_vecs, cov_mats)
+            for key in mask_images.keys():
+                if key not in mask_images_all.keys():
+                    mask_images_all[key] = []
+                mask_images_all[key].append(mask_images[key])
+
+        mask_images = {}
+        for name in mask_images_all.keys():
+            height, width, channels = image.shape
+            mask_images[name] = np.zeros((height,width))
+            for mask in mask_images_all[name]:
+                mask_images[name] += mask
+
+        box_img = image
+        colormap = {'red': (0,0,255), 'green': (0,255,0), 'blue': (255,0,0), 
+                    'yellow': (0,255,255), 'white': (255,255,255), 'transparent': (0,0,0)}
+        total_pins = 0
+        for name in mask_images.keys():
+            print name + ": " + str(cv2.minMaxLoc(mask_images[name]))
+            ret, bin_mask = cv2.threshold(np.uint8(mask_images[name] * 255), 7, 255, cv2.THRESH_BINARY)
+            kernel = np.ones((5,5),np.uint8)
+            bin_mask = cv2.erode(bin_mask, kernel, iterations = 1)
+            bin_mask = cv2.dilate(bin_mask, kernel, iterations = 5)
+            cv2.imshow(name + " probablilities: ", np.concatenate((mask_images[name], bin_mask)))
+            
+            box_img, cnt = self.do_box_stuff(box_img, bin_mask, colormap[name])
+            print okb("Found " + str(cnt) + " " + name + " pins")
+            total_pins += cnt
+
+        print okb("Total number of pins: " + str(total_pins))
+        cv2.imshow("Box image ", box_img)
+        cv2.waitKey(0);   
+
+
+
 # Dispatcher
 if __name__ == '__main__':
     class MyParser(OptionParser):
@@ -254,7 +307,7 @@ if __name__ == '__main__':
     parser.add_option('--db', dest='db_root_path',
         help='specify path to folder with pin database (default: ../database)', default="../database")
     parser.add_option('--method', dest='pinit_method',
-        help="specify pin_it method; available: 'G1D', 'G3D'", default='None', choices=['None', 'G1D', 'G3D'])
+        help="specify pin_it method; available: 'G1D', 'G3D', 'GMM'", default='None', choices=['None', 'G1D', 'G3D', 'GMM'])
     parser.add_option('--denoise', dest='denoise_method',
         help="specify denoise method; available: 'BLT' for bilateral filter and 'NlMeans' for " +
              "non-local means denoise algorithm", default='NlMeans', choices=['NlMeans', 'BLT'])
