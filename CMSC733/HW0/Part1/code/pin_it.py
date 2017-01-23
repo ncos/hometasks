@@ -28,7 +28,9 @@ class OSHelpers:
 class PinIt:
     def __init__(self, arg_parser):
         (self.options, self.args) = arg_parser.parse_args()
-
+        if (self.options.pinit_method == 'None'):
+            arg_parser.print_help()
+            exit(1)
 
     def start(self):
         try:
@@ -58,6 +60,27 @@ class PinIt:
         return image_smth
 
 
+    def do_box_stuff(self, input_image, mask, color = (255, 255, 255)):
+        im2, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        try: hierarchy = hierarchy[0]
+        except: hierarchy = []
+
+        height, width, channels = input_image.shape
+        min_x, min_y = width, height
+        max_x = max_y = 0
+
+        cnt = 0
+        for contour, hier in zip(contours, hierarchy):
+            (x,y,w,h) = cv2.boundingRect(contour)
+            min_x, max_x = min(x, min_x), max(x+w, max_x)
+            min_y, max_y = min(y, min_y), max(y+h, max_y)
+            if w < width/3.0 and h < height/3.0:
+                cv2.rectangle(input_image, (x,y), (x+w,y+h), color, 2)
+                cnt = cnt + 1
+        return (input_image, cnt)
+
+
     def gaussian1D(self, image):
         height, width, channels = image.shape
 
@@ -82,9 +105,9 @@ class PinIt:
                 green_probability[i, j]  = math.exp(-1.0 * (green_normalized[i, j] - nu['green'])**2 / (2.0 * s_sq['green']))
                 blue_probability[i, j]   = math.exp(-1.0 * (blue_normalized[i, j] - nu['blue'])**2 / (2.0 * s_sq['blue']))
 
-        #cv2.imshow("B: ", blue_normalized)
-        #cv2.imshow("G: ", green_normalized)
-        #cv2.imshow("R: ", red_normalized)
+        cv2.imshow("B: ", blue_normalized)
+        cv2.imshow("G: ", green_normalized)
+        cv2.imshow("R: ", red_normalized)
         yellow_probability = red_probability * green_probability;
         
         print "Blue: " + str(cv2.minMaxLoc(blue_probability))
@@ -107,6 +130,18 @@ class PinIt:
         cv2.imshow("Red probablilities: ", np.concatenate((red_probability, red_mask)))
         cv2.imshow("Yellow probablilities: ", np.concatenate((yellow_probability, yellow_mask)))
 
+        box_img = image
+
+        box_img, cnt = self.do_box_stuff(box_img, blue_mask, (255, 0, 0))
+        print "Found " + str(cnt) + " blue pins"
+        box_img, cnt = self.do_box_stuff(box_img, green_mask, (0, 255, 0))
+        print "Found " + str(cnt) + " green pins"
+        box_img, cnt = self.do_box_stuff(box_img, red_mask, (0, 0, 255))
+        print "Found " + str(cnt) + " red pins"
+        box_img, cnt = self.do_box_stuff(box_img, yellow_mask, (0, 255, 255))
+        print "Found " + str(cnt) + " yellow pins"
+
+        cv2.imshow("Box image ", box_img)
         cv2.waitKey(0);
 
 
@@ -168,14 +203,11 @@ if __name__ == '__main__':
     parser.add_option('--db', dest='db_root_path',
         help='specify path to folder with pin database (default: ../database)', default="../database")
     parser.add_option('--method', dest='pinit_method',
-        help="specify pin_it method; available: 'G1D', 'G3D'", default='G1D', choices=['G1D', 'G3D'])
+        help="specify pin_it method; available: 'G1D', 'G3D'", default='None', choices=['None', 'G1D', 'G3D'])
     parser.add_option('--denoise', dest='denoise_method',
         help="specify denoise method; available: 'BLT' for bilateral filter and 'NlMeans' for " +
-             "non-local means denoise algorithm", default='BLT', choices=['NlMeans', 'BLT'])
+             "non-local means denoise algorithm", default='NlMeans', choices=['NlMeans', 'BLT'])
 
-    #if (len(sys.argv) == 1):
-    #    parser.print_help()
-    #    exit(1)
 
     pin_it = PinIt(parser)
     pin_it.start()
