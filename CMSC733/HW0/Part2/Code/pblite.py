@@ -81,9 +81,10 @@ class PBlite:
     def start(self):
         self.get_gaussians()
         self.get_hdmasks()
+        self.LM()
 
 
-    def gkern2(self, nsig):
+    def gkern(self, nsig):
         inp = np.zeros((self.options.filter_size, self.options.filter_size))
         inp[self.options.filter_size // 2, self.options.filter_size // 2] = 1.0
         return fi.gaussian_filter(inp, nsig)
@@ -99,7 +100,7 @@ class PBlite:
         for scale in xrange(self.options.scales):
             gaussians[scale] = {}
             sigma = (scale + 1) * math.sqrt(2)
-            gaussian = self.gkern2(sigma)
+            gaussian = self.gkern(sigma)
 
             gx = signal.convolve2d(gaussian, xsobel, boundary='symm', mode='same')
             gy = signal.convolve2d(gaussian, ysobel, boundary='symm', mode='same')
@@ -137,10 +138,57 @@ class PBlite:
         cv2.imwrite(os.path.join(self.options.hdmask_path, "hdmasks.jpg"), hd_set * 255)
         return hdmasks
 
-    
+
+    def gkern_derivatives(self, nsig1, nsig2):
+        base = np.array(xrange(self.options.filter_size)) - (self.options.filter_size // 2)
+        gx = np.exp(np.square(base) / float(-2.0 * nsig1)) / float(math.sqrt(2.0 * math.pi * nsig1))
+        gy = np.exp(np.square(base) / float(-2.0 * nsig2)) / float(math.sqrt(2.0 * math.pi * nsig2))
+        gyy = base * gy / float(-nsig2)
+        gyyy = gy / float(-nsig2) + base * gyy / float(-nsig2)
+        return (np.matmul(np.resize(gy, (gy.size, 1)), np.resize(gx, (1, gx.size))),
+                np.matmul(np.resize(gyy, (gyy.size, 1)), np.resize(gx, (1, gx.size))),
+                np.matmul(np.resize(gyyy, (gyyy.size, 1)), np.resize(gx, (1, gx.size))))
+
+    def LoG(self, nsig):
+        base = (np.array(xrange(self.options.filter_size)) - (self.options.filter_size // 2))
+        base2 = base**2
+        base2x2 = np.array([e + base2 for e in base2]) 
+        gx = np.exp(np.square(base) / float(-2.0 * nsig)) 
+        gaussian = np.matmul(np.resize(gx, (gx.size, 1)), np.resize(gx, (1, gx.size)))
+        norm = (base2x2 - 2.0 * nsig) / float(nsig**2)
+        return norm * gaussian
+
     def LM(self):
+        lm_filters = []
         for scale in xrange(3):
-             
+            nsig2 = 2**(scale + 2)
+            nsig1 = 9 * nsig2
+            g, gx, gxx = self.gkern_derivatives(nsig1, nsig2)
+            for rot in xrange(6):
+                M = cv2.getRotationMatrix2D((self.options.filter_size // 2, self.options.filter_size // 2), \
+                                             int((rot + 1) * 30), 1)
+                gxR = cv2.warpAffine(gx, M, (self.options.filter_size, self.options.filter_size))
+                gxxR = cv2.warpAffine(gxx, M, (self.options.filter_size, self.options.filter_size))
+                lm_filters.append(gxR)
+                lm_filters.append(gxxR)
+            
+        for scale in xrange(4):
+            lm_filters.append(self.LoG(2**(scale / 2.0)))
+
+        for scale in xrange(4):
+            lm_filters.append(self.LoG(9.0 * 2**(scale / 2.0)))
+    
+        for scale in xrange(4):
+            lm_filters.append(self.gkern(2**scale))
+ 
+        lm_image = np.concatenate(tuple([self.scale(im) for im in lm_filters]), axis=1)
+        cv2.imwrite(os.path.join(self.options.lm_path, "lm.jpg"), lm_image * 255)
+        return lm_filters           
+
+    def S(self):
+        s_filters = []
+        
+
 
 
 # Dispatcher
@@ -157,6 +205,8 @@ if __name__ == '__main__':
         help='specify path to folder to save gaussian database (default: ../Images)', default="../Images")
     parser.add_option('--path_hdmask', dest='hdmask_path',
         help='specify path to folder to save hdmask database (default: ../Images)', default="../Images")
+    parser.add_option('--path_lmfilt', dest='lm_path',
+        help='specify path to folder to save LM filters (default: ../Images)', default="../Images")
     parser.add_option('--filter_size', dest='filter_size',
         help='specify the size of filters to use (odd number, default: 49)', type="int", default=49)
     parser.add_option('--scales', dest='scales',
