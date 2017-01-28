@@ -27,7 +27,7 @@ if nargin<6, maxDist = 0.0075; end
 if nargin<5, nthresh = 99; end
 
 %% clean up
-% system(sprintf('rm -rf %s/*',outDir));
+system(sprintf('rm -rf %s/*',outDir));
 
 
 iids = dir(fullfile(imgDir,'*.jpg'));
@@ -47,7 +47,7 @@ end
 collect_eval_bdry(outDir);
 
 %% clean up
-% system(sprintf('rm -rf %s/*_ev1.txt',outDir));
+system(sprintf('rm -rf %s/*_ev1.txt',outDir));
 
 
 

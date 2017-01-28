@@ -73,11 +73,11 @@ class OSHelpers:
 
 # Multiprocessing workarounds
 def chi_sq_comp(arg):
+    print wrn("\tchi-square: (" + str(arg[0]) + " " + str(arg[1]) + ")")
     tmp = np.zeros_like(np.float32(arg[2][0]))
     for i, slice_ in enumerate(arg[2]):
-        print wrn("\tchi-square: (" + str(arg[0]) + " " + str(arg[1]) + " " + str(i) + ")")
-        g_i = signal.convolve2d(slice_, arg[3], boundary='symm', mode='same')
-        h_i = signal.convolve2d(slice_, arg[4], boundary='symm', mode='same')
+        g_i = cv2.filter2D(slice_, -1, arg[3])
+        h_i = cv2.filter2D(slice_, -1, arg[4])
         tmp += 0.5 * (g_i - h_i)**2 / (g_i + h_i + 10**(-6))
     return tmp
 
@@ -95,7 +95,7 @@ class PBlite:
             arg_parser.print_help()
             exit(1)
 
-        self.rgb_image = cv2.imread(self.options.input_name, cv2.CV_LOAD_IMAGE_COLOR)
+        self.rgb_image = cv2.imread(self.options.input_name, cv2.IMREAD_COLOR)
         if (self.rgb_image is None):
             print err("No image at " + self.options.input_name + " was found!")
             arg_parser.print_help()
@@ -131,8 +131,8 @@ class PBlite:
                                 for kernel in self.filters]), axis = 1)
 
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-        a_rets, a_labels, a_centers = cv2.kmeans(np.float32(a_filt), self.options.K, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
-        b_rets, b_labels, b_centers = cv2.kmeans(np.float32(b_filt), self.options.K, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+        a_rets, a_labels, a_centers = cv2.kmeans(np.float32(a_filt), self.options.K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+        b_rets, b_labels, b_centers = cv2.kmeans(np.float32(b_filt), self.options.K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
         TMa = a_labels.reshape(self.im_height, self.im_width)         
         TMb = b_labels.reshape(self.im_height, self.im_width)        
         cv2.imwrite(os.path.join(self.options.tmap_path, "TextonMap_A_" + self.im_name), self.scale(TMa) * 255)
@@ -177,7 +177,6 @@ class PBlite:
         cg_img = np.concatenate(tuple([self.scale(im) for im in cg]), axis=1)
         cv2.imwrite(os.path.join(self.options.cg_path, "cg_" + self.im_name), cg_img * 255)
 
-
         # PB Lite
         tga_ = np.mean(tga, axis=0) / np.mean(tga)
         tgb_ = np.mean(tgb, axis=0) / np.mean(tgb)
@@ -188,8 +187,7 @@ class PBlite:
 
         pb_lite = self.scale((tga_ + tgb_ + bg_ + cg_) * (sbl_ + cny_))
         cv2.imwrite(os.path.join(self.options.pblite_path, "PbLite_" + self.im_name), pb_lite * 255)
-
-
+        cv2.imwrite(os.path.join(self.options.benchmark_path, self.im_name.split(".")[0] + ".png"), pb_lite * 255)
 
     def chi_sq(self, mat):
         bins = np.max(mat) + 1
@@ -204,20 +202,21 @@ class PBlite:
 
 
     def get_sobel_pb(self):
-        sobel = cv2.Sobel(self.grayscale, -1, 1, 1, ksize=5)
-        ret = np.zeros_like(sobel)
+        sobel = cv2.Sobel(self.grayscale, -1, 1, 1, ksize=3)
+        ret = np.zeros_like(np.float32(self.grayscale))
         for th in frange(0.08 * 255, 0.3 * 255, 0.02 * 255):
             ret_, thresh = cv2.threshold(sobel, th, 255, cv2.THRESH_BINARY)
-            ret += thresh
+            ret += self.scale(np.float32(thresh))
         return self.scale(ret)
 
 
     def get_canny_pb(self):
-        ret = np.zeros_like(self.grayscale)
+        ret = np.zeros_like(np.float32(self.grayscale))
         for th in frange(0.1 * 255, 0.7 * 255, 0.1 * 255):
-            for sigma in range(1, 4):
-                canny = cv2.Canny(self.grayscale, th/2, th, sigma)
-                ret += canny
+            for s in range(1, 4):
+                sigma = s * 2 + 1
+                canny = cv2.Canny(cv2.GaussianBlur(self.grayscale, (sigma,sigma), 0), th/2, th, 3)
+                ret += self.scale(canny)
         return self.scale(ret)
 
 
@@ -244,8 +243,8 @@ class PBlite:
             sigma = (scale + 1) * math.sqrt(2)
             gaussian = self.gkern(sigma)
 
-            gx = signal.convolve2d(gaussian, xsobel, boundary='symm', mode='same')
-            gy = signal.convolve2d(gaussian, ysobel, boundary='symm', mode='same')
+            gx = cv2.filter2D(gaussian, -1, xsobel)
+            gy = cv2.filter2D(gaussian, -1, xsobel)
             for rot in xrange(self.options.rotations):
                 angle = (rot + 1) * 2.0 * math.pi / float(self.options.rotations)
                 g_image = gx * math.cos(angle) + gy * math.sin(angle)
@@ -384,9 +383,9 @@ if __name__ == '__main__':
     parser.add_option('--tbins', dest='K',
         help='number of bins for texture (default: 16)', type="int", default=16)
     parser.add_option('--bbins', dest='bbins',
-        help='number of bins for brightness (default: 100)', type="int", default=100)
+        help='number of bins for brightness (default: 20)', type="int", default=20)
     parser.add_option('--cbins', dest='cbins',
-        help='number of bins for color (default: 100)', type="int", default=100)
+        help='number of bins for color (default: 20)', type="int", default=20)
 
     parser.add_option('--path_gaussian', dest='gaussian_path',
         help='specify path to folder to save gaussian database (default: ../Images)', default="../Images")
@@ -411,7 +410,9 @@ if __name__ == '__main__':
         help='specify path to folder to save Color Maps (default: ../Images/ColorMap)', default="../Images/ColorMap")
     parser.add_option('--path_cg', dest='cg_path',
         help='specify path to folder to save Color Gradients (default: ../Images/cg)', default="../Images/cg")
-    
+    parser.add_option('--path_benchmark', dest='benchmark_path',
+        help='specify path to folder to save Output to benchmark (default: ../Benchmark/data/mypb)', \
+        default="../Benchmark/data/mypb")
     parser.add_option('--path_sobel', dest='sobel_path',
         help='specify path to folder to save Sobel Pb (default: ../Images/SobelPb)', default="../Images/SobelPb")
     parser.add_option('--path_canny', dest='canny_path',
