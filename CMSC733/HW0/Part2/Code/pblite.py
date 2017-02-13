@@ -178,16 +178,17 @@ class PBlite:
         cv2.imwrite(os.path.join(self.options.cg_path, "cg_" + self.im_name), cg_img * 255)
 
         # PB Lite
-        tga_ = np.mean(tga, axis=0) / np.mean(tga)
-        tgb_ = np.mean(tgb, axis=0) / np.mean(tgb)
-        bg_  = np.mean(bg,  axis=0) / np.mean(bg)
-        cg_  = np.mean(cg,  axis=0) / np.mean(cg)
-        sbl_ = sobel_pb * np.sum(sobel_pb)
-        cny_ = canny_pb * np.sum(canny_pb)
+        tga_ = np.mean(tga, axis=0)# / np.mean(tga)
+        tgb_ = np.mean(tgb, axis=0)# / np.mean(tgb)
+        bg_  = np.mean(bg,  axis=0)# / np.mean(bg)
+        cg_  = np.mean(cg,  axis=0)# / np.mean(cg)
+        sbl_ = sobel_pb# * np.sum(sobel_pb)
+        cny_ = canny_pb# * np.sum(canny_pb)
 
         pb_lite = self.scale((tga_ + tgb_ + bg_ + cg_) * (sbl_ + cny_))
         cv2.imwrite(os.path.join(self.options.pblite_path, "PbLite_" + self.im_name), pb_lite * 255)
         cv2.imwrite(os.path.join(self.options.benchmark_path, self.im_name.split(".")[0] + ".png"), pb_lite * 255)
+
 
     def chi_sq(self, mat):
         bins = np.max(mat) + 1
@@ -244,7 +245,7 @@ class PBlite:
             gaussian = self.gkern(sigma)
 
             gx = cv2.filter2D(gaussian, -1, xsobel)
-            gy = cv2.filter2D(gaussian, -1, xsobel)
+            gy = cv2.filter2D(gaussian, -1, ysobel)
             for rot in xrange(self.options.rotations):
                 angle = (rot + 1) * 2.0 * math.pi / float(self.options.rotations)
                 g_image = gx * math.cos(angle) + gy * math.sin(angle)

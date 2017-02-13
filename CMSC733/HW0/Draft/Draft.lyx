@@ -1,10 +1,9 @@
-%% LyX 2.1.4 created this file.  For more info, see http://www.lyx.org/.
-%% Do not edit unless you really know what you are doing.
-\documentclass[conference]{IEEEtran}
-\usepackage[latin9]{inputenc}
-
-\makeatletter
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+#LyX file created by tex2lyx 2.1
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass IEEEtran
+\begin_preamble
 
 %% bare_conf.tex
 %% V1.4b
@@ -320,107 +319,652 @@
 
 
 
-\makeatother
-
-\begin{document}
-% paper title% Titles are generally capitalized except for words such as a, an, and, as,% at, but, by, for, in, nor, of, on, or, the, to and up, which are usually% not capitalized unless they are the first or last word of the title.% Linebreaks \\ can be used within to get better formatting as desired.% Do not put math or special symbols in the title.
 
 
-\title{The awesome IEEE-style report for CMSC733 Homework 0!}
 
-\maketitle
-% author names and affiliations% use a multiple column layout for up to three different% affiliations
+\end_preamble
+\options conference
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package none
+\inputencoding iso8859-15
+\fontencoding default
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 0
+\use_package cancel 0
+\use_package esint 1
+\use_package mathdots 0
+\use_package mathtools 0
+\use_package mhchem 0
+\use_package stackrel 0
+\use_package stmaryrd 0
+\use_package undertilde 0
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+% paper title% Titles are generally capitalized except for words such as a, an, and, as,% at, but, by, for, in, nor, of, on, or, the, to and up, which are usually% not capitalized unless they are the first or last word of the title.% Linebreaks 
+\backslash
+
+\backslash
+ can be used within to get better formatting as desired.% Do not put math or special symbols in the title.
+\end_layout
+
+\end_inset
 
 
-%\author{\IEEEauthorblockN{Anton Mitrokhin} \IEEEauthorblockA{School of Computer Science\\
-%University of Maryland, College Park \\
-%College Park, MD 20742, United States\\
+\end_layout
+
+\begin_layout Title
+The awesome IEEE-style report for CMSC733 Homework 0!
+\end_layout
+
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+%
+\backslash
+author{
+\backslash
+IEEEauthorblockN{Anton Mitrokhin} 
+\backslash
+IEEEauthorblockA{School of Computer Science
+\backslash
+
+\backslash
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+%University of Maryland, College Park 
+\backslash
+
+\backslash
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+%College Park, MD 20742, United States
+\backslash
+
+\backslash
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
 %Email: anton.mitrokhin@phystech.edu} 
+\end_layout
 
-\author{Anton Mitrokhin School of Computer Science\\
-University of Maryland, College Park \\
-College Park, MD 20742, United States\\
-Email: anton.mitrokhin@phystech.edu} 
+\end_inset
 
 
+\end_layout
+
+\begin_layout Author
+Anton Mitrokhin School of Computer Science
+\begin_inset Newline newline
+\end_inset
+
+ University of Maryland, College Park 
+\begin_inset Newline newline
+\end_inset
+
+ College Park, MD 20742, United States
+\begin_inset Newline newline
+\end_inset
+
+ Email: anton.mitrokhin@phystech.edu
+\end_layout
+
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+% conference papers do not typically use 
+\backslash
+thanks and this command% is locked out in conference mode. If really needed, such as for% the acknowledgment of grants, issue a 
+\backslash
+IEEEoverridecommandlockouts% after 
+\backslash
+documentclass
+\end_layout
+
+\end_inset
 
 
+\end_layout
 
-% conference papers do not typically use \thanks and this command% is locked out in conference mode. If really needed, such as for% the acknowledgment of grants, issue a \IEEEoverridecommandlockouts% after \documentclass
+\begin_layout Standard
 
-% for over three affiliations, or if they all won't fit within the width% of the page, use this alternative format:% %\author{\IEEEauthorblockN{Michael Shell\IEEEauthorrefmark{1},%Homer Simpson\IEEEauthorrefmark{2},%James Kirk\IEEEauthorrefmark{3}, %Montgomery Scott\IEEEauthorrefmark{3} and%Eldon Tyrell\IEEEauthorrefmark{4}}%\IEEEauthorblockA{\IEEEauthorrefmark{1}School of Electrical and Computer Engineering\\%Georgia Institute of Technology,%Atlanta, Georgia 30332--0250\\ Email: see http://www.michaelshell.org/contact.html}%\IEEEauthorblockA{\IEEEauthorrefmark{2}Twentieth Century Fox, Springfield, USA\\%Email: homer@thesimpsons.com}%\IEEEauthorblockA{\IEEEauthorrefmark{3}Starfleet Academy, San Francisco, California 96678-2391\\%Telephone: (800) 555--1212, Fax: (888) 555--1212}%\IEEEauthorblockA{\IEEEauthorrefmark{4}Tyrell Inc., 123 Replicant Street, Los Angeles, California 90210--4321}}
+\begin_inset ERT
+status collapsed
 
-% use for special paper notices%\IEEEspecialpapernotice{(Invited Paper)}
+\begin_layout Plain Layout
+% for over three affiliations, or if they all won't fit within the width% of the page, use this alternative format:% %
+\backslash
+author{
+\backslash
+IEEEauthorblockN{Michael Shell
+\backslash
+IEEEauthorrefmark{1},%Homer Simpson
+\backslash
+IEEEauthorrefmark{2},%James Kirk
+\backslash
+IEEEauthorrefmark{3}, %Montgomery Scott
+\backslash
+IEEEauthorrefmark{3} and%Eldon Tyrell
+\backslash
+IEEEauthorrefmark{4}}%
+\backslash
+IEEEauthorblockA{
+\backslash
+IEEEauthorrefmark{1}School of Electrical and Computer Engineering
+\backslash
 
+\backslash
+%Georgia Institute of Technology,%Atlanta, Georgia 30332--0250
+\backslash
+
+\backslash
+ Email: see http://www.michaelshell.org/contact.html}%
+\backslash
+IEEEauthorblockA{
+\backslash
+IEEEauthorrefmark{2}Twentieth Century Fox, Springfield, USA
+\backslash
+
+\backslash
+%Email: homer@thesimpsons.com}%
+\backslash
+IEEEauthorblockA{
+\backslash
+IEEEauthorrefmark{3}Starfleet Academy, San Francisco, California 96678-2391
+\backslash
+
+\backslash
+%Telephone: (800) 555--1212, Fax: (888) 555--1212}%
+\backslash
+IEEEauthorblockA{
+\backslash
+IEEEauthorrefmark{4}Tyrell Inc., 123 Replicant Street, Los Angeles, California 90210--4321}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+% use for special paper notices%
+\backslash
+IEEEspecialpapernotice{(Invited Paper)}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
 % make the title area
+\end_layout
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
 % As a general rule, do not put math, special symbols or citations% in the abstract
-\begin{abstract}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
 PinIt and PB Lite. 
-\end{abstract}
+\end_layout
 
+\begin_layout Standard
 This is a report for CMSC733 class Homework 0. Here you can find some details on color segmentation algorithms - 1D gaussian and 3D gaussian, as well as 'Probability of Boundary' algorithm for boundary detection. Some cool pictures are included.
+\end_layout
 
-% For peer review papers, you can put extra information on the cover% page as needed:% \ifCLASSOPTIONpeerreview% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}% \fi% For peerreview papers, this IEEEtran command inserts a page break and% creates the second title. It will be ignored for other modes.
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+% For peer review papers, you can put extra information on the cover% page as needed:% 
+\backslash
+ifCLASSOPTIONpeerreview% 
+\backslash
+begin{center} 
+\backslash
+bfseries EDICS Category: 3-BBND 
+\backslash
+end{center}% 
+\backslash
+fi% For peerreview papers, this IEEEtran command inserts a page break and% creates the second title. It will be ignored for other modes.
+\end_layout
+
+\end_inset
 
 
-\IEEEpeerreviewmaketitle{}
+\end_layout
+
+\begin_layout Peer Review Title
+
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+% no 
+\backslash
+IEEEPARstartWe use Python 2.7 on Ubuntu 16.04 witn numpy, scipy and OpenCV 3.1 (which comes with ROS Kinetic). Note, that the code will probably work with OpenCV 2.4, but the kmeans function has a slightly different API... Run the executebles (for Part 1 and Part 2) with -h option to get the list of options to tweak parameters!
+\end_layout
+
+\end_inset
 
 
-\section{Introduction}
+\end_layout
 
-% no \IEEEPARstartWe use Python 2.7 on Ubuntu 16.04 witn numpy, scipy and OpenCV 3.1 (which comes with ROS Kinetic). Note, that the code will probably work with OpenCV 2.4, but the kmeans function has a slightly different API... Run the executebles (for Part 1 and Part 2) with -h option to get the list of options to tweak parameters!
+\begin_layout Standard
 
-\hfill{}mds
+\begin_inset space \hfill{}
 
-\hfill{}January 29, 2017
+\end_inset
 
+mds
+\end_layout
 
-\subsection{Pin It!}
+\begin_layout Standard
 
+\begin_inset space \hfill{}
+
+\end_inset
+
+January 29, 2017
+\end_layout
+
+\begin_layout Subsection
+Pin It!
+\end_layout
+
+\begin_layout Standard
 Primitive color segmentation
+\end_layout
 
+\begin_layout Subsubsection
+One-dimensional gaussian
+\end_layout
 
-\subsubsection{One-dimensional gaussian}
-
+\begin_layout Standard
 Subsubsection text here.
+\end_layout
 
-% An example of a floating figure using the graphicx package.% Note that \label must occur AFTER (or within) \caption.% For figures, \caption should occur after the \includegraphics.% Note that IEEEtran v1.7 and later has special internal code that% is designed to preserve the operation of \label within \caption% even when the captionsoff option is in effect. However, because% of issues like this, it may be the safest practice to put all your% \label just after \caption rather than within \caption{}.% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class% option should be used if it is desired that the figures are to be% displayed while in draft mode.%\begin{figure}[!t]%\centering%\includegraphics[width=2.5in]{myfigure}% where an .eps filename suffix will be assumed under latex, % and a .pdf suffix will be assumed for pdflatex; or what has been declared% via \DeclareGraphicsExtensions.%\caption{Simulation results for the network.}%\label{fig_sim}%\end{figure}
+\begin_layout Standard
 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+% An example of a floating figure using the graphicx package.% Note that 
+\backslash
+label must occur AFTER (or within) 
+\backslash
+caption.% For figures, 
+\backslash
+caption should occur after the 
+\backslash
+includegraphics.% Note that IEEEtran v1.7 and later has special internal code that% is designed to preserve the operation of 
+\backslash
+label within 
+\backslash
+caption% even when the captionsoff option is in effect. However, because% of issues like this, it may be the safest practice to put all your% 
+\backslash
+label just after 
+\backslash
+caption rather than within 
+\backslash
+caption{}.% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class% option should be used if it is desired that the figures are to be% displayed while in draft mode.%
+\backslash
+begin{figure}[!t]%
+\backslash
+centering%
+\backslash
+includegraphics[width=2.5in]{myfigure}% where an .eps filename suffix will be assumed under latex, % and a .pdf suffix will be assumed for pdflatex; or what has been declared% via 
+\backslash
+DeclareGraphicsExtensions.%
+\backslash
+caption{Simulation results for the network.}%
+\backslash
+label{fig_sim}%
+\backslash
+end{figure}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
 % Note that the IEEE typically puts floats only at the top, even when this% results in a large percentage of a column being occupied by floats.
+\end_layout
 
-% An example of a double column floating figure using two subfigures.% (The subfig.sty package must be loaded for this to work.)% The subfigure \label commands are set within each subfloat command,% and the \label for the overall figure must come after \caption.% \hfil is used as a separator to get equal spacing.% Watch out that the combined width of all the subfigures on a % line do not exceed the text width or a line break will occur.%\begin{figure*}[!t]%\centering%\subfloat[Case I]{\includegraphics[width=2.5in]{box}%%\label{fig_first_case}}%\hfil%\subfloat[Case II]{\includegraphics[width=2.5in]{box}%%\label{fig_second_case}}%\caption{Simulation results for the network.}%\label{fig_sim}%\end{figure*}% Note that often IEEE papers with subfigures do not employ subfigure% captions (using the optional argument to \subfloat[]), but instead will% reference/describe all of them (a), (b), etc., within the main caption.% Be aware that for subfig.sty to generate the (a), (b), etc., subfigure% labels, the optional argument to \subfloat must be present. If a% subcaption is not desired, just leave its contents blank,% e.g., \subfloat[].
-
-% An example of a floating table. Note that, for IEEE style tables, the% \caption command should come BEFORE the table and, given that table% captions serve much like titles, are usually capitalized except for words% such as a, an, and, as, at, but, by, for, in, nor, of, on, or, the, to% and up, which are usually not capitalized unless they are the first or% last word of the caption. Table text will default to \footnotesize as% the IEEE normally uses this smaller font for tables.% The \label must come after \caption as always.%\begin{table}[!t]%% increase table row spacing, adjust to taste%\renewcommand{\arraystretch}{1.3}% if using array.sty, it might be a good idea to tweak the value of% \extrarowheight as needed to properly center the text within the cells%\caption{An Example of a Table}%\label{table_example}%\centering%% Some packages, such as MDW tools, offer better commands for making tables%% than the plain LaTeX2e tabular which is used here.%\begin{tabular}{|c||c|}%\hline%One & Two\\%\hline%Three & Four\\%\hline%\end{tabular}%\end{table}
-
-% Note that the IEEE does not put floats in the very first column% - or typically anywhere on the first page for that matter. Also,% in-text middle ("here") positioning is typically not used, but it% is allowed and encouraged for Computer Society conferences (but% not Computer Society journals). Most IEEE journals/conferences use% top floats exclusively. % Note that, LaTeX2e, unlike IEEE journals/conferences, places% footnotes above bottom floats. This can be corrected via the% \fnbelowfloat command of the stfloats package.
+\end_inset
 
 
-\subsection{PB Lite}
+\end_layout
 
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+% An example of a double column floating figure using two subfigures.% (The subfig.sty package must be loaded for this to work.)% The subfigure 
+\backslash
+label commands are set within each subfloat command,% and the 
+\backslash
+label for the overall figure must come after 
+\backslash
+caption.% 
+\backslash
+hfil is used as a separator to get equal spacing.% Watch out that the combined width of all the subfigures on a % line do not exceed the text width or a line break will occur.%
+\backslash
+begin{figure*}[!t]%
+\backslash
+centering%
+\backslash
+subfloat[Case I]{
+\backslash
+includegraphics[width=2.5in]{box}%%
+\backslash
+label{fig_first_case}}%
+\backslash
+hfil%
+\backslash
+subfloat[Case II]{
+\backslash
+includegraphics[width=2.5in]{box}%%
+\backslash
+label{fig_second_case}}%
+\backslash
+caption{Simulation results for the network.}%
+\backslash
+label{fig_sim}%
+\backslash
+end{figure*}% Note that often IEEE papers with subfigures do not employ subfigure% captions (using the optional argument to 
+\backslash
+subfloat[]), but instead will% reference/describe all of them (a), (b), etc., within the main caption.% Be aware that for subfig.sty to generate the (a), (b), etc., subfigure% labels, the optional argument to 
+\backslash
+subfloat must be present. If a% subcaption is not desired, just leave its contents blank,% e.g., 
+\backslash
+subfloat[].
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+% An example of a floating table. Note that, for IEEE style tables, the% 
+\backslash
+caption command should come BEFORE the table and, given that table% captions serve much like titles, are usually capitalized except for words% such as a, an, and, as, at, but, by, for, in, nor, of, on, or, the, to% and up, which are usually not capitalized unless they are the first or% last word of the caption. Table text will default to 
+\backslash
+footnotesize as% the IEEE normally uses this smaller font for tables.% The 
+\backslash
+label must come after 
+\backslash
+caption as always.%
+\backslash
+begin{table}[!t]%% increase table row spacing, adjust to taste%
+\backslash
+renewcommand{
+\backslash
+arraystretch}{1.3}% if using array.sty, it might be a good idea to tweak the value of% 
+\backslash
+extrarowheight as needed to properly center the text within the cells%
+\backslash
+caption{An Example of a Table}%
+\backslash
+label{table_example}%
+\backslash
+centering%% Some packages, such as MDW tools, offer better commands for making tables%% than the plain LaTeX2e tabular which is used here.%
+\backslash
+begin{tabular}{|c||c|}%
+\backslash
+hline%One & Two
+\backslash
+
+\backslash
+%
+\backslash
+hline%Three & Four
+\backslash
+
+\backslash
+%
+\backslash
+hline%
+\backslash
+end{tabular}%
+\backslash
+end{table}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+% Note that the IEEE does not put floats in the very first column% - or typically anywhere on the first page for that matter. Also,% in-text middle ("here") positioning is typically not used, but it% is allowed and encouraged for Computer Society conferences (but% not Computer Society journals). Most IEEE journals/conferences use% top floats exclusively. % Note that, LaTeX2e, unlike IEEE journals/conferences, places% footnotes above bottom floats. This can be corrected via the% 
+\backslash
+fnbelowfloat command of the stfloats package.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+PB Lite
+\end_layout
+
+\begin_layout Standard
 Probability of boundary: simplified version
+\end_layout
 
+\begin_layout Section
+Conclusion
+\end_layout
 
-\section{Conclusion}
+\begin_layout Standard
+We (I) did a great job here and deserve an extra credit for being awesome.
+\end_layout
 
-We (I) did a great job here and deserve an extra credit for being
-awesome. 
+\begin_layout Standard
 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
 % conference papers do not normally have an appendix
+\end_layout
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
 % use section* for acknowledgment
+\end_layout
+
+\end_inset
 
 
-\section*{Acknowledgment}
+\end_layout
 
-The authors would like to thank... nobody. As they had to do everything
-on their own!
-\begin{thebibliography}{1}
-\bibitem{IEEEhowto:kopka} Pablo Arbelaez, Michael Maire, Charless
-Fowlkes, and Jitendra Malik. Contour detection and hierarchical image
-segmentation. IEEE transactions on pattern analysis and machine intelligence,
-33(5):898\textendash 916, 2011.
+\begin_layout Section*
+Acknowledgment
+\end_layout
 
-\end{thebibliography}
+\begin_layout Standard
+The authors would like to thank... nobody. As they had to do everything on their own! 
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "IEEEhowto:kopka"
+
+\end_inset
+
+ Pablo Arbelaez, Michael Maire, Charless Fowlkes, and Jitendra Malik. Contour detection and hierarchical image segmentation. IEEE transactions on pattern analysis and machine intelligence, 33(5):898–916, 2011.
+\end_layout
+
+\begin_layout Standard
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
 % that's all folks
-\end{document}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
