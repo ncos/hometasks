@@ -11,7 +11,7 @@ f = dir (sprintf('../Images/%s/*.jpg', folder_name));
 files = {f.name};
 filepaths = cellfun(@(x) sprintf('../Images/%s/%s', folder_name, x), files, 'UniformOutput', false);
 
-set_size = numel(files)
+set_size = numel(files);
 
 global Im
 Im = cell(1, set_size);
@@ -33,6 +33,8 @@ for a = 1 : set_size
         if a == b
             continue
         end
+        
+        fprintf('Matching %i with %i\n', a, b);
         
         %% Feature matching
         fdesc_a = fdesc{a};
@@ -77,10 +79,11 @@ for a = 1 : set_size
 end
 numMatches(numMatches < 10) = 0;
 
+fprintf('Matching done; Starting RANSAC...');
 
 %% RANSAC
-close all;
-imatch12 = cell(set_size);
+%%close all;
+%%imatch12 = cell(set_size);
 numRansac = zeros(set_size);
 global Hab;
 Hab = cell(set_size);
@@ -89,12 +92,14 @@ for a = 1 : set_size
         if numMatches(a,b) == 0
             continue
         end
+        
+        fprintf('RANSACing %i with %i\n', a, b);
+        
         fmatch1 = fmatch12{a,b}{1};
         fmatch2 = fmatch12{a,b}{2};
         bestInliers = [];
         bestNumMatches = 0;
         for i = 1 : RANSACiter
-            % Four random matches
             rmatch = [];
             while numel(rmatch) ~= 4
                 rmatch = unique(randi(size(fmatch1,1),4,1));
@@ -116,35 +121,50 @@ for a = 1 : set_size
         end
         imatch1 = fmatch1(bestInliers,:);
         imatch2 = fmatch2(bestInliers,:);
-        imatch12{a, b} = {imatch1 imatch2};
+        %%imatch12{a, b} = {imatch1 imatch2};
         numRansac(a, b) = numel(bestInliers);
         H = est_homography(imatch1(:,1),imatch1(:,2),imatch2(:,1),imatch2(:,2));
         Hab{a,b} = H./H(3,3);
-        figure;
-        dispMatchedFeatures(Im{a},Im{b},imatch1,imatch2,'montage');
-        title(sprintf('RANSAC %d %d',a,b));
+        %figure;
+        %dispMatchedFeatures(Im{a},Im{b},imatch1,imatch2,'montage');
+        %title(sprintf('RANSAC %d %d',a,b));
     end
 end
 numRansac(numRansac < 5) = 0;
 
 close all;
-Ipano = Im{1};
-H = eye(3);
-Htmp = eye(3);
+mapping = zeros(set_size - 1, 1);
+
+
 for a = 1 : (set_size - 1)
     disp(numRansac)
     [val, idx] = max(numRansac(a,:));
     if (val == 0)      
         [val, idx] = max(numRansac(:,a));
+        if (val == 0) 
+            continue;
+        end
     end
+    mapping(a) = idx;
     
     numRansac(idx, a) = 0;
-    Htmp = Htmp * Hab{a, idx};
-    [Ipano, xtrans, ytrans] = stitch(Ipano, Im{idx}, H * Htmp);
+
+end
+
+disp(mapping);
+
+Ipano = Im{1};
+H = eye(3);
+Htmp = eye(3);
+for a = 1 : (set_size - 1)
+    fprintf('Stitching %i and %i\n', a, mapping(a));
+    Htmp = Htmp * Hab{a, mapping(a)};
+    [Ipano, xtrans, ytrans] = stitch(Ipano, Im{mapping(a)}, H * Htmp);
     H = H * [1 0 xtrans; 0 1 ytrans; 0 0 1];
-    
 end
 
 
 imwrite(Ipano, sprintf('../Images/%s.jpg', folder_name));
+
+%%k = waitforbuttonpress;
 end

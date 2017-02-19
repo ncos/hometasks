@@ -43,7 +43,7 @@ im1padmask = padmask & ~Itransmask;
 blur = fspecial('gaussian', 40, 40);
 maska = im2double(~padmask);
 maska = imfilter(maska,blur,'replicate');
-% .5 is the half point of a linear gaussian distribution
+
 maska = maska * 2;
 maska(maska > 1) = 1;
 
@@ -52,7 +52,7 @@ edge_filt = ones(3);
 edge = imfilter(im2double(padmask),edge_filt,'replicate');
 edge(edge == 9) = 0;
 edge = edge.*andpadmask;
-% find relavant portion of maska
+
 maskamask = imfilter(edge,blur,'replicate');
 maskamask = maskamask.*andpadmask;
 maskamask(maskamask > 0) = 1;
