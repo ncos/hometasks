@@ -19,6 +19,7 @@ else
     load('Data.mat');
 end
 
+
 %% Estimate an intrinsic parameter
 [K, Hs] = EstimateK_linear(x, X);
 
@@ -37,3 +38,7 @@ cprintf('green', 'Reprojection error per measurement: %f pixel(s)\n',...
 
 %% Evaluate parameters
 Evaluate;
+
+
+x_opt_1 = project(X, K_opt, Rs_opt(:,:,1), ts_opt(:,1), ks_opt);
+display(x_opt_1);

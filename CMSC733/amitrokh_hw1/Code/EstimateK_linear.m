@@ -26,13 +26,15 @@ vij = @(i,j,H) [ H(1,i)*H(1,j)
                  H(3,i)*H(3,j) ];
 
 V = [];
-Hs = [];
-for i = 1 : length(x)
-    H = est_homography(x[i, :, 1], x[i, :, 2], X[:, 1], X[:, 2]);
-    Hs = [Hs; H];
+Hs = zeros(3,3,length(x(1,1,:)));
+for i = 1 : length(x(1,1,:))
+    H = est_homography(x(:, 1, i), x(:, 2, i), X(:, 1), X(:, 2));
+    Hs(:,:,i) = H;
     G = [vij(1,2,H)'; (vij(1,1,H)-vij(2,2,H))'];
     V = [V; G];
 end
+
+disp(length(Hs));
 
 [~,~,RIGHT] = svd( V );
 b = RIGHT(:, end);

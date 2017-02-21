@@ -5,6 +5,7 @@
 *.pyc
 *.png
 *.jpg
+*.mat
 /Java/Molecule/nbproject/private/
 /Java/Molecule/build/
 /Java/Molecule/dist/

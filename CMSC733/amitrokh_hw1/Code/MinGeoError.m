@@ -23,7 +23,7 @@ function [ ks_opt, K_opt, Rs_opt, ts_opt ] = MinGeoError( x, X, ks_init, K_init,
 params0 = encodeParams(ks_init, K_init, Rs_init, ts_init);
 opts = optimoptions(@lsqnonlin, 'Algorithm', 'levenberg-marquardt', 'TolX', 1e-64, 'TolFun', 1e-64, 'MaxFunEvals', 1e64, 'MaxIter', 1e64, 'Display', 'iter');
 
-params = lsqnonlin(@(p)GeoError_cb(p, x, X), params0, opts);
+params = lsqnonlin(@(p)GeoError_cb(p, x, X), params0, [], [], opts);
 [ks_opt, K_opt, Rs_opt, ts_opt] = decodeParams(params, size(x, 3));
 end
 

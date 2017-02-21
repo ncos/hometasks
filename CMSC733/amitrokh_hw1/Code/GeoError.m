@@ -18,34 +18,12 @@ function [error, f] = GeoError(x, X, ks, K, Rs, ts)
 %
 
 
-f = cell(2, length(x), 1);
-for i = 1:length(x)
-    x_y = project(X, K, Rs(i), ts(i), ks) - x(i);
-    f{1, i} = x_y(:, 1);
-    f{2, i} = x_y(:, 2);
+f = zeros(2, length(x(1,1,:)), length(x));
+for i = 1 : length(x(1,1,:))
+    x_y = project(X, K, Rs(:,:,i), ts(:,i), ks) - x(:,:,i).';
+
+    f(1, i, :) = x_y(1, :);
+    f(2, i, :) = x_y(2, :);
 end
-f = cell2mat(f);
-error = sum(f.^2);
-end
-
-
-function res_pt = project(X, K, R, T, ks)
-    cPt = [R,T] * X;
-    nPt = cPt(1:2,:) ./ repmat(cPt(3,:), [2,1]);
-    % distance of point from optical centre
-    r2 = sum(nPt.^2);
-    % apply radial distortion
-    dPt = nPt .* repmat(1 + ks(1)*r2 + ks(2)*r2.^2, [2,1]);
-    % convert to homogeneous coords
-    dPt(3,:) = 1;
-    % apply intrinsic transformation
-    res_pt = unhomo(K * dPt);
-end
-
-
-function x = unhomo( x )
-    if size( x, 1 ) == 3
-        x = x ./ repmat( x(3,:), [3,1] );
-    elseif size( x, 1 ) == 4
-        x = x ./ repmat( x(4,:), [4,1] );
+error = sum(f(:).^2);
 end

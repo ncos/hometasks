@@ -11,10 +11,12 @@ function [ Rs, ts ] = EstimateRt_linear( Hs, K )
 %   ts: translation vectors. 3 x 1 x N matrix, where N is the number of calibration images. 
 %
 
-Rs = [];
-ts = [];
-for i = 1:length( Calibration.Images )
-    H    = Hs(i);
+Rs = zeros(3,3,length(Hs(1,1,:)));
+ts = zeros(3,1,length(Hs(1,1,:)));
+
+for i = 1 : length(Hs(1,1,:))
+    display(i);
+    H    = Hs(:,:,i);
     h1 = H(:,1);
     h2 = H(:,2);
     h3 = H(:,3);
@@ -24,12 +26,10 @@ for i = 1:length( Calibration.Images )
     r1 = lambda1 * (K\h1);
     r2 = lambda2 * (K\h2);
     r3 = cross(r1, r2);
-    t = lambdat * (K\h3);
+    T = lambdat * (K\h3);
     R = [r1 r2 r3];
-    T = [t];
-    R = reorthogonalise(R);
-    Rs = [Rs; R];
-    ts = [ts; T];
+    Rs(:,:,i) = R;
+    ts(:,:,i) = T;
 end
 
 end
