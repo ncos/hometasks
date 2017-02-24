@@ -41,4 +41,10 @@ Evaluate;
 
 
 x_opt_1 = project(X, K_opt, Rs_opt(:,:,1), ts_opt(:,1), ks_opt);
-display(x_opt_1);
+% show 2d points
+figure(12); 
+imagesc(imgs{1});
+hold on;
+plot(x_opt_1(1,:), x_opt_1(2,:), 'rx');
+hold off;
+title('Now reproject the points back (for the 1st image)!');
