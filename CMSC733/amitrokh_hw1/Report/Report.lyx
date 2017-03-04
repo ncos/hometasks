@@ -415,16 +415,7 @@ Email: amitrokh@umd.edu
 \end_layout
 
 \begin_layout Title
-Cool IEEE template!
-\end_layout
-
-\begin_layout Abstract
-The abstract goes here.
- 
-\end_layout
-
-\begin_layout Peer Review Title
-
+Report for HW1!
 \end_layout
 
 \begin_layout Section
@@ -432,112 +423,102 @@ Introduction
 \end_layout
 
 \begin_layout Standard
-This demo file is intended to serve as a 
-\begin_inset Quotes eld
-\end_inset
-
-starter file
-\begin_inset Quotes erd
-\end_inset
-
- for IEEE conference papers produced under LaTeX
-\begin_inset space \space{}
-\end_inset
-
-using IEEEtran.cls version 1.8b and later.
- I wish you the best of success.
+Well, basically the stuff worked out of the box! Equations from the paper
+ were literally (almost) copied to the predefined function prototypes and
+ then the optimizer did most of the job.
+ The Matlab vision toolkit was...
+ problematic at first, but it turns out they have a 50-day trial licence.
+ I swear I will pirate this thing next time.
 \end_layout
 
 \begin_layout Standard
 \begin_inset space \hfill{}
 \end_inset
 
-August 26, 2015
+February 23, 2017
 \end_layout
 
 \begin_layout Subsection
-Subsection Heading Here
-\end_layout
-
-\begin_layout Standard
-Subsection text here.
+Pictures here:
 \end_layout
 
 \begin_layout Subsubsection
-Subsubsection Heading Here
+The final accuracy was ~0.51px, the output is:
+\begin_inset Newline newline
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-Subsubsection text here.
+\begin_inset Graphics
+	filename /home/ncos/hometasks/CMSC733/amitrokh_hw1/Code/Rt.png
+	width 100col%
+	groupId first
+
+\end_inset
+
+
 \end_layout
 
-\begin_layout Section
-Conclusion
+\begin_layout Subsubsection
+Success!
+\begin_inset Newline newline
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-The conclusion goes here.
+\begin_inset Graphics
+	filename /home/ncos/hometasks/CMSC733/amitrokh_hw1/Code/success.png
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
 \end_layout
 
-\begin_layout Section*
-Acknowledgment
+\begin_layout Subsubsection
+The reprojection of 3D points back to the image (after the optimization):
+\begin_inset Newline newline
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-The authors would like to thank...
-\end_layout
-
-\begin_layout Bibliography
-\begin_inset CommandInset bibitem
-LatexCommand bibitem
-key "IEEEhowto:kopka"
+\begin_inset Graphics
+	filename /home/ncos/hometasks/CMSC733/amitrokh_hw1/Code/reprojected.jpg
+	width 100col%
 
 \end_inset
 
- H.
-\begin_inset space ~
-\end_inset
 
-Kopka and P.
-\begin_inset space ~
-\end_inset
-
-W.
- Daly, 
-\emph on
-A Guide to LaTeX
-\emph default
-, 3rd
-\begin_inset space ~
-\end_inset
-
-ed.
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-hskip
-\end_layout
-
-\end_inset
-
- 1em plus 0.5em minus 0.4em
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-relax
-\end_layout
-
-\end_inset
-
- Harlow, England: Addison-Wesley, 1999.
 \end_layout
 
 \end_body

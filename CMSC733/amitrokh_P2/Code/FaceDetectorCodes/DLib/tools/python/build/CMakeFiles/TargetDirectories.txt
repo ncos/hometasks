@@ -1,0 +1,2 @@
+/home/nitin/CMSC733/dlib-19.2/tools/python/build/dlib_build/CMakeFiles/dlib.dir
+/home/nitin/CMSC733/dlib-19.2/tools/python/build/CMakeFiles/dlib_.dir

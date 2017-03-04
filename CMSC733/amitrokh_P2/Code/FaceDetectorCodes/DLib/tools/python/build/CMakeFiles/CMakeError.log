@@ -1,0 +1,53 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/nitin/CMSC733/dlib-19.2/tools/python/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/bin/gmake "cmTryCompileExec3674663436/fast"
+/bin/gmake -f CMakeFiles/cmTryCompileExec3674663436.dir/build.make CMakeFiles/cmTryCompileExec3674663436.dir/build
+gmake[1]: Entering directory `/home/nitin/CMSC733/dlib-19.2/tools/python/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/nitin/CMSC733/dlib-19.2/tools/python/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3674663436.dir/CheckSymbolExists.c.o
+/bin/cc    -o CMakeFiles/cmTryCompileExec3674663436.dir/CheckSymbolExists.c.o   -c /home/nitin/CMSC733/dlib-19.2/tools/python/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec3674663436
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3674663436.dir/link.txt --verbose=1
+/bin/cc       CMakeFiles/cmTryCompileExec3674663436.dir/CheckSymbolExists.c.o  -o cmTryCompileExec3674663436 -rdynamic 
+CMakeFiles/cmTryCompileExec3674663436.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+gmake[1]: Leaving directory `/home/nitin/CMSC733/dlib-19.2/tools/python/build/CMakeFiles/CMakeTmp'
+gmake[1]: *** [cmTryCompileExec3674663436] Error 1
+gmake: *** [cmTryCompileExec3674663436/fast] Error 2
+
+File /home/nitin/CMSC733/dlib-19.2/tools/python/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/nitin/CMSC733/dlib-19.2/tools/python/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/bin/gmake "cmTryCompileExec1304756091/fast"
+/bin/gmake -f CMakeFiles/cmTryCompileExec1304756091.dir/build.make CMakeFiles/cmTryCompileExec1304756091.dir/build
+gmake[1]: Entering directory `/home/nitin/CMSC733/dlib-19.2/tools/python/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/nitin/CMSC733/dlib-19.2/tools/python/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1304756091.dir/CheckFunctionExists.c.o
+/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec1304756091.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec1304756091
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1304756091.dir/link.txt --verbose=1
+/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec1304756091.dir/CheckFunctionExists.c.o  -o cmTryCompileExec1304756091 -rdynamic -lpthreads 
+/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+gmake[1]: Leaving directory `/home/nitin/CMSC733/dlib-19.2/tools/python/build/CMakeFiles/CMakeTmp'
+gmake[1]: *** [cmTryCompileExec1304756091] Error 1
+gmake: *** [cmTryCompileExec1304756091/fast] Error 2
+
+
