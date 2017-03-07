@@ -4,6 +4,7 @@
 import cv2
 import numpy as np
 from optparse import OptionParser
+from multiprocessing import Process, Array
 from os.path import isfile, join
 import sys, os, math
 import dlib
@@ -111,7 +112,33 @@ class Delaunay:
             pt = []        
              
         return delaunayTri
-        
+       
+# Multithreading workaround
+def Uvec(p0, p_vec):
+    diff = p_vec - p0
+    r = np.einsum('ij,ij->i', diff, diff)
+    return r * np.ma.log(r).filled(0)
+
+def tps(p, a0, ax, ay, w, landmarks):
+    ret = a0 + ax * p[0] + ay * p[1]
+    ret += np.sum(np.multiply(w.transpose(), np.array(Uvec(p, landmarks))))
+    return ret
+
+def imtransfer(f_img, src_img, params_x, params_y, landmarks, lu0, rd0, lu1, rd1):
+    src_imh, src_imw, channels = src_img.shape
+    ax = params_x[-3:]
+    wx = params_x[:-3]
+    ay = params_y[-3:]
+    wy = params_y[:-3]
+ 
+    for i in range(lu0, rd0 + 1, 1):
+        for j in range(lu1, rd1 + 1, 1):      
+            p = np.array([i, j])
+            x = tps(p, ax[2], ax[0], ax[1], wx, landmarks)
+            y = tps(p, ay[2], ay[0], ay[1], wy, landmarks)
+            if ((y < src_imh) and (x < src_imw)):
+                f_img[j, i] = src_img[int(y), int(x)]
+
 
 class DaSwap:
     def __init__(self, arg_parser):
@@ -127,10 +154,14 @@ class DaSwap:
         src_image = cv2.imread(self.options.target_path, cv2.IMREAD_COLOR)
         src_dets = self.detector(src_image, 1)
         self.src_face = Face(src_image, src_dets[0], self.predictor)
-        # Dst face
-        dst_image = cv2.imread(self.options.celebrity_img, cv2.IMREAD_COLOR)
-        dst_dets = self.detector(dst_image, 1)
-        self.dst_face = Face(dst_image, dst_dets[0], self.predictor)
+
+        if (self.options.target_video_path != ""):
+            self.target_video = cv2.VideoCapture(self.options.target_video_path)
+        else:
+            # Dst face
+            dst_image = cv2.imread(self.options.celebrity_img, cv2.IMREAD_COLOR)
+            dst_dets = self.detector(dst_image, 1)
+            self.dst_face = Face(dst_image, dst_dets[0], self.predictor)
         print okb("Initialization done")
 
     def do_blend(self, face, face_image):
@@ -211,13 +242,20 @@ class DaSwap:
     def U(self, p0, p1):
         diff = p0 - p1
         r = diff.dot(diff)
+        if (r < 0.000001):
+            return 0
         return r * math.log(r)
+
+
+    def Uvec(self, p0, p_vec):
+        diff = p_vec - p0
+        r = np.einsum('ij,ij->i', diff, diff)
+        return r * np.ma.log(r).filled(0)
 
 
     def tps(self, p, a0, ax, ay, w, landmarks):
         ret = a0 + ax * p[0] + ay * p[1]
-        for i, p_ in enumerate(landmarks):
-            ret += w[i] * self.U(p, p_)
+        ret += np.sum(np.multiply(w.transpose(), np.array(self.Uvec(p, landmarks))))
         return ret
 
 
@@ -228,8 +266,8 @@ class DaSwap:
             P[i][0] = pi[0]
             P[i][1] = pi[1]
             P[i][2] = 1.0
-            for j, pj in enumerate(lnd_src):
-                K[i, j] = self.U(pi, pj) # swap?
+            for j, pj in enumerate(lnd_dst):
+                K[j, i] = self.U(pi, pj)
         K = np.matrix(K)
         P = np.matrix(P)
         Z = np.matrix(np.zeros((3,3), dtype = np.float32)) 
@@ -253,38 +291,70 @@ class DaSwap:
         wx = params_x[:-3]
         ay = params_y[-3:]
         wy = params_y[:-3]
-
-        print params_x
-        print ax[2], ax[0], ax[1]
-
-        p = self.dst_face.landmarks[0]
-        x = self.tps(p, ax[2], ax[0], ax[1], wx, self.src_face.landmarks)
-        y = self.tps(p, ay[2], ay[0], ay[1], wy, self.src_face.landmarks)
-        print p, " <- ", x, y
-        print p, " <- ", self.src_face.landmarks[0]
-
-        exit(0)
+  
         lu = np.min(self.dst_face.landmarks, axis=0)
         rd = np.max(self.dst_face.landmarks, axis=0)
         face_img = np.copy(self.dst_face.image)
+
+        len_size = rd[0] + 1 - lu[0]
+        step = len_size/10
+
+        #print "Size: ", len_size, lu[0], rd[0]
+        #rngs = range(0, len_size, step) + lu[0]
+        #print rngs
+
+
+        #face_img_shared = Array('d', face_img.reshape(-1,1))
+
+        #p_handlers = []
+        #for r in rngs:
+        #    lu0 = r
+        #    rd0 = min(r + step - 1, rd[0])
+            
+        #    p = Process(target=imtransfer, args=(face_img_shared, self.src_face.image, params_x, params_y, self.dst_face.landmarks, lu0, rd0, lu[1], rd[1],))
+        #    p_handlers.append(p)
+        #    p.start()
+            #imtransfer(face_img, self.src_face.image, params_x, params_y, self.dst_face.landmarks, lu0, rd0, lu[1], rd[1])
+        
+        #for p in p_handlers:
+        #    p.join()
+
+
+
         for i in range(lu[0], rd[0] + 1, 1):
             for j in range(lu[1], rd[1] + 1, 1):      
                 p = np.array([i, j])
                 x = self.tps(p, ax[2], ax[0], ax[1], wx, self.dst_face.landmarks)
                 y = self.tps(p, ay[2], ay[0], ay[1], wy, self.dst_face.landmarks)
-                #print x,y," -> ", i, j
-                #face_img[j, i] = self.src_face.image[int(y), int(x)]
+        
+                if ((y < self.src_face.imh) and (x < self.src_face.imw)):
+                    face_img[j, i] = self.src_face.image[int(y), int(x)]
+       
 
-
-        cv2.imwrite("./tps_result.png", face_img)
-
+        blend_img = self.do_blend(self.dst_face, face_img)
+        return blend_img
+        
 
     def swap(self):
         if (self.options.method == 'TRI'):
             self.triang_swap()    
-                                
+            exit(0)
+
         if (self.options.method == 'TPS'):
-            self.tps_swap()
+            if (self.options.target_video_path != ""):
+                fourcc = cv2.VideoWriter_fourcc(*'XVID')
+                wwriter = cv2.VideoWriter('output.avi', fourcc, 20.0, (self.src_face.imw, self.src_face.imh))            
+
+                while(self.target_video.isOpened()):
+                    ret, frame = self.target_video.read()
+                    dst_dets = self.detector(frame, 1)
+                    self.dst_face = Face(frame, dst_dets[0], self.predictor)
+                    result_frame = self.tps_swap()
+                    wwriter.write(result_frame)
+                
+            else:
+                cv2.imwrite("./tps_result.png", self.tps_swap())
+                exit(0)
 
 
     def draw_point(self, img, p, color = (255,0,0)):
@@ -324,6 +394,8 @@ if __name__ == '__main__':
         help='specify path to celebrity picture (default: ../Data/rambo.jpg)', default="../Data/rambo.jpg")
     parser.add_option('-t', '--target',  dest='target_path',
         help='specify path to target image (default: ../Data/me.jpg)', default="../Data/me.jpg")
+    parser.add_option('-t', '--target_video',  dest='target_video_path',
+        help='specify path to target video (default: ../Data/video.avi)', default="../Data/video.avi")
     parser.add_option('--predictor',  dest='predictor_path',
         help='specify path to predictor (default: ./FaceDetectorCodes/DLib/python_examples/shape_predictor_68_face_landmarks.dat)', 
                                          default="./FaceDetectorCodes/DLib/python_examples/shape_predictor_68_face_landmarks.dat")
