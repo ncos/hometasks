@@ -4,7 +4,7 @@
 import cv2
 import numpy as np
 from optparse import OptionParser
-from multiprocessing import Process, Array
+from multiprocessing import Pool
 from os.path import isfile, join
 import sys, os, math
 import dlib
@@ -124,20 +124,23 @@ def tps(p, a0, ax, ay, w, landmarks):
     ret += np.sum(np.multiply(w.transpose(), np.array(Uvec(p, landmarks))))
     return ret
 
-def imtransfer(f_img, src_img, params_x, params_y, landmarks, lu0, rd0, lu1, rd1):
-    src_imh, src_imw, channels = src_img.shape
+def tps_warp_worker(args):
+    return tps_warp(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
+
+def tps_warp(params_x, params_y, landmarks, lu0, rd0, lu1, rd1):
     ax = params_x[-3:]
     wx = params_x[:-3]
     ay = params_y[-3:]
     wy = params_y[:-3]
  
+    warp_img = np.zeros((rd1 - lu1 + 1, rd0 - lu0 + 1, 2))
     for i in range(lu0, rd0 + 1, 1):
         for j in range(lu1, rd1 + 1, 1):      
             p = np.array([i, j])
             x = tps(p, ax[2], ax[0], ax[1], wx, landmarks)
             y = tps(p, ay[2], ay[0], ay[1], wy, landmarks)
-            if ((y < src_imh) and (x < src_imw)):
-                f_img[j, i] = src_img[int(y), int(x)]
+            warp_img[j - lu1, i - lu0] = [int(x), int(y)]
+    return warp_img
 
 
 class DaSwap:
@@ -147,22 +150,33 @@ class DaSwap:
             arg_parser.print_help()
             exit(1)
 
-        self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor(self.options.predictor_path)
-
-        # Src face
-        src_image = cv2.imread(self.options.target_path, cv2.IMREAD_COLOR)
-        src_dets = self.detector(src_image, 1)
-        self.src_face = Face(src_image, src_dets[0], self.predictor)
-
+        self.src_face = None
+        self.dst_face = None
+        self.target_video = None
+        if (self.options.source_img != ""):
+            self.src_face = self.safe_open_image(self.options.source_img)
+        
+        if (self.options.target_img != ""):
+            self.dst_face = self.safe_open_image(self.options.target_img)
+        
         if (self.options.target_video_path != ""):
             self.target_video = cv2.VideoCapture(self.options.target_video_path)
-        else:
-            # Dst face
-            dst_image = cv2.imread(self.options.celebrity_img, cv2.IMREAD_COLOR)
-            dst_dets = self.detector(dst_image, 1)
-            self.dst_face = Face(dst_image, dst_dets[0], self.predictor)
+
+        self.debug_level = self.options.debug_level
+        self.detector = dlib.get_frontal_face_detector()
+        self.predictor = dlib.shape_predictor(self.options.predictor_path)
+       
         print okb("Initialization done")
+
+
+    def safe_open_image(self, path):
+         image = cv2.imread(path, cv2.IMREAD_COLOR)
+         dets = self.detector(image, 1)
+         if (len(dets) == 0):
+            print err("Error! face not found on " + path)
+            return None
+         return Face(image, dets[0], self.predictor)
+
 
     def do_blend(self, face, face_image):
         mask = np.zeros(face.image.shape, dtype = face.image.dtype)  
@@ -187,8 +201,8 @@ class DaSwap:
                     pt3 = (points[t[2], 0], points[t[2], 1])
                     if(cv2.pointPolygonTest(np.array([pt1, pt2, pt3]), (i, j), False) != -1):
                         tri_map[i - lu[0], j - lu[1]] = k + 1
-                        #self.draw_point(face.image, (i,j), colors[k % len(colors)])
-                        break;
+                        break
+
         return (lu, rd, tri_map)
 
 
@@ -205,23 +219,23 @@ class DaSwap:
 
     def triang_swap(self):
         landmarks = (self.src_face.landmarks + self.dst_face.landmarks) / 2.0
-        mapping = Delaunay.get((0, 0, max(self.dst_face.imw, self.src_face.imw), 
-                                      max(self.dst_face.imh, self.src_face.imh)), landmarks)
+        self.tri_mapping = Delaunay.get((0, 0, max(self.dst_face.imw, self.src_face.imw), 
+                                               max(self.dst_face.imh, self.src_face.imh)), landmarks)
         print okb("Delaunay done")
 
-        (lu, rd, tri_map) = self.get_trimap(self.dst_face, mapping)
+        (lu, rd, tri_map) = self.get_trimap(self.dst_face, self.tri_mapping)
         print okb("Trimap done")
  
         matrices = []
-        for k, t in enumerate(mapping):
-            matrices.append(self.get_tritrans(k, mapping, self.src_face.landmarks, self.dst_face.landmarks))
+        for k, t in enumerate(self.tri_mapping):
+            matrices.append(self.get_tritrans(k, self.tri_mapping, self.src_face.landmarks, self.dst_face.landmarks))
 
         print okb("Matrices done")
 
         face_img = np.copy(self.dst_face.image)
         for i in range(lu[0], rd[0] + 1, 1):
             for j in range(lu[1], rd[1] + 1, 1):        
-                m_id = tri_map[i - lu[0], j - lu[1]] - 1;
+                m_id = tri_map[i - lu[0], j - lu[1]] - 1
                 if (m_id < 0):
                     continue
                 dst_pt = np.matrix([[i],[j],[1.0]])
@@ -231,12 +245,18 @@ class DaSwap:
                 if ((y < self.src_face.imh) and (x < self.src_face.imw)):
                     face_img[j, i] = self.src_face.image[y, x]
 
+        if (self.debug_level > 0):               
+            self.draw_delaunay(self.src_face.image, self.src_face.landmarks, self.tri_mapping)
+            self.draw_delaunay(self.dst_face.image, self.dst_face.landmarks, self.tri_mapping)
+            cv2.imwrite("./triangulation_src_triang.png", self.src_face.image)
+            cv2.imwrite("./triangulation_dst_triang.png", self.dst_face.image)
+            self.draw_delunay_color(self.src_face.image, self.src_face, self.tri_mapping)
+            self.draw_delunay_color(self.dst_face.image, self.dst_face, self.tri_mapping)
+            cv2.imwrite("./triangulation_src_triang_color.png", self.src_face.image)
+            cv2.imwrite("./triangulation_dst_triang_color.png", self.dst_face.image)
+
         blend_img = self.do_blend(self.dst_face, face_img)
-        # self.draw_delaunay(self.src_face.image, self.src_face.landmarks, mapping)
-        # self.draw_delaunay(self.dst_face.image, self.dst_face.landmarks, mapping)
-        # cv2.imwrite("./triangulation_src.png", self.src_face.image)
-        # cv2.imwrite("./triangulation_src_map.png", self.src_face.image)
-        cv2.imwrite("./triangulation_result.png", blend_img)
+        return blend_img
 
 
     def U(self, p0, p1):
@@ -273,7 +293,7 @@ class DaSwap:
         Z = np.matrix(np.zeros((3,3), dtype = np.float32)) 
         I = np.identity(len(lnd_dst) + 3)
         M = np.concatenate((np.concatenate((K, P), axis=1), np.concatenate((P.transpose(), Z), axis=1)), axis=0) + 0.001 * I
-         
+          
         Vx = np.matrix(np.concatenate((lnd_src[:,0], np.array([0.0,0.0,0.0])), axis=0)).transpose()
         Vy = np.matrix(np.concatenate((lnd_src[:,1], np.array([0.0,0.0,0.0])), axis=0)).transpose()
       
@@ -296,70 +316,83 @@ class DaSwap:
         rd = np.max(self.dst_face.landmarks, axis=0)
         face_img = np.copy(self.dst_face.image)
 
+        
+        # Threading
         len_size = rd[0] + 1 - lu[0]
         step = len_size/10
+        rngs = range(0, len_size, step) + lu[0]
 
-        #print "Size: ", len_size, lu[0], rd[0]
-        #rngs = range(0, len_size, step) + lu[0]
-        #print rngs
-
-
-        #face_img_shared = Array('d', face_img.reshape(-1,1))
-
-        #p_handlers = []
-        #for r in rngs:
-        #    lu0 = r
-        #    rd0 = min(r + step - 1, rd[0])
-            
-        #    p = Process(target=imtransfer, args=(face_img_shared, self.src_face.image, params_x, params_y, self.dst_face.landmarks, lu0, rd0, lu[1], rd[1],))
-        #    p_handlers.append(p)
-        #    p.start()
-            #imtransfer(face_img, self.src_face.image, params_x, params_y, self.dst_face.landmarks, lu0, rd0, lu[1], rd[1])
+        thread_args = []
+        thread_result = []
+        for i in xrange(len(rngs)):
+            lu0 = rngs[i]
+            rd0 = min(lu0 + step - 1, rd[0])
+            thread_args.append([params_x, params_y, self.dst_face.landmarks, lu0, rd0, lu[1], rd[1]])
         
-        #for p in p_handlers:
-        #    p.join()
+        thread_pool = Pool(processes=len(thread_args))
+        thread_result = thread_pool.map(tps_warp_worker, thread_args)
 
-
+        warp_img = np.hstack(thread_result)
+        #warp_img = tps_warp(params_x, params_y, self.dst_face.landmarks, lu[0], rd[0], lu[1], rd[1])
 
         for i in range(lu[0], rd[0] + 1, 1):
             for j in range(lu[1], rd[1] + 1, 1):      
-                p = np.array([i, j])
-                x = self.tps(p, ax[2], ax[0], ax[1], wx, self.dst_face.landmarks)
-                y = self.tps(p, ay[2], ay[0], ay[1], wy, self.dst_face.landmarks)
-        
+                x = warp_img[j - lu[1], i - lu[0], 0]
+                y = warp_img[j - lu[1], i - lu[0], 1]
                 if ((y < self.src_face.imh) and (x < self.src_face.imw)):
                     face_img[j, i] = self.src_face.image[int(y), int(x)]
        
-
         blend_img = self.do_blend(self.dst_face, face_img)
         return blend_img
         
 
     def swap(self):
-        if (self.options.method == 'TRI'):
-            self.triang_swap()    
-            exit(0)
+        if (self.dst_img != None):
+            if (self.src_img == None):
+                print err("Error! You have specified a target image, but no source image")
+            
+            if (self.options.method == 'TRI'):
+                cv2.imwrite("./triangulation_result.png", self.triang_swap())
+            
+            if (self.options.method == 'TPS'):
+                cv2.imwrite("./tps_result.png", self.tps_swap())
 
-        if (self.options.method == 'TPS'):
-            if (self.options.target_video_path != ""):
-                fourcc = cv2.VideoWriter_fourcc(*'XVID')
-                wwriter = cv2.VideoWriter('output.avi', fourcc, 20.0, (self.src_face.imw, self.src_face.imh))            
 
-                while(self.target_video.isOpened()):
-                    ret, frame = self.target_video.read()
-                    dst_dets = self.detector(frame, 1)
+        if (self.target_video != None):
+            ret, frame = self.target_video.read()
+            (h, w, c) = frame.shape
+            fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+            wwriter = cv2.VideoWriter('output.avi', fourcc, 30.0, (w, h))            
+
+            while(self.target_video.isOpened()):
+                ret, result_frame = self.target_video.read()
+                if (ret == False):
+                    break
+
+                dst_dets = self.detector(result_frame, 1)
+                if (len(dst_dets) == 0):
+                    print err("No face detected!")
+                else:
                     self.dst_face = Face(frame, dst_dets[0], self.predictor)
                     result_frame = self.tps_swap()
-                    wwriter.write(result_frame)
-                
-            else:
-                cv2.imwrite("./tps_result.png", self.tps_swap())
-                exit(0)
+                    self.draw_landmarks(result_frame, self.dst_face.landmarks)                    
+                         
+                wwriter.write(result_frame)
+                cv2.imshow('frame', result_frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+
+            self.target_video.release()
+            wwriter.release()
+            cv2.destroyAllWindows()
 
 
     def draw_point(self, img, p, color = (255,0,0)):
         cv2.circle(img, (p[0], p[1]), 2, color, thickness=1, lineType=8, shift=0)
- 
+    
+    def draw_landmarks(self, img, landmarks, color = (255,0,0)):
+        for p in landmarks:
+            self.draw_point(img, p, color)
  
     def draw_delaunay(self, img, points, mapping):
         delaunay_color = (255,255,255)
@@ -374,6 +407,24 @@ class DaSwap:
             cv2.circle(img, pt1, 2, (0,0,255), thickness=1, lineType=8, shift=0)
             cv2.circle(img, pt2, 2, (0,0,255), thickness=1, lineType=8, shift=0)
             cv2.circle(img, pt3, 2, (0,0,255), thickness=1, lineType=8, shift=0)
+
+    def draw_delunay_color(self, img, face, mapping):
+        lu = np.min(face.landmarks, axis=0)
+        rd = np.max(face.landmarks, axis=0)
+        tri_map = np.zeros((rd[0] - lu[0] + 1, rd[1] - lu[1] + 1), dtype=np.int)
+        points = face.landmarks
+        for i in range(lu[0], rd[0] + 1, 1):
+            for j in range(lu[1], rd[1] + 1, 1):               
+                for k, t in enumerate(mapping):
+                    pt1 = (points[t[0], 0], points[t[0], 1])
+                    pt2 = (points[t[1], 0], points[t[1], 1])
+                    pt3 = (points[t[2], 0], points[t[2], 1])
+                    if(cv2.pointPolygonTest(np.array([pt1, pt2, pt3]), (i, j), False) != -1):
+                        tri_map[i - lu[0], j - lu[1]] = k + 1
+                        self.draw_point(img, (i,j), colors[k % len(colors)])
+                        break
+        return (lu, rd, tri_map)
+
 
 
 # Dispatcher
@@ -390,18 +441,21 @@ if __name__ == '__main__':
 
     examples = ("")
     parser = MyParser(usage="Usage: " + sys.argv[0] + " <options>", epilog=examples)
-    parser.add_option('-c', '--celebrity', dest='celebrity_img',
-        help='specify path to celebrity picture (default: ../Data/rambo.jpg)', default="../Data/rambo.jpg")
-    parser.add_option('-t', '--target',  dest='target_path',
-        help='specify path to target image (default: ../Data/me.jpg)', default="../Data/me.jpg")
-    parser.add_option('-t', '--target_video',  dest='target_video_path',
-        help='specify path to target video (default: ../Data/video.avi)', default="../Data/video.avi")
+    parser.add_option('-s', '--source', dest='source_img',
+        help='specify path to source picture (default: ../Data/me.jpg)', default="../Data/me.jpg")
+    parser.add_option('-t', '--target',  dest='target_img',
+        help='specify path to target image (default: ../Data/rambo.jpg)', default="../Data/rambo.jpg")
+    parser.add_option('-v', '--target_video',  dest='target_video_path',
+        help='specify path to target video', default="")
     parser.add_option('--predictor',  dest='predictor_path',
         help='specify path to predictor (default: ./FaceDetectorCodes/DLib/python_examples/shape_predictor_68_face_landmarks.dat)', 
                                          default="./FaceDetectorCodes/DLib/python_examples/shape_predictor_68_face_landmarks.dat")
     parser.add_option('--method', dest='method',
             help="specify swap method: 'TRI' for triangulation based one or 'TPS' for " +
                  "Thin Plate Spline method", default='TPS', choices=['TRI', 'TPS'])
+    parser.add_option('--debug-level', dest='debug_level',
+            help='debug message (and other stuff) level - the higher the better', type="int", default=0)
+
 
     da_swap = DaSwap(parser)
     da_swap.swap()
