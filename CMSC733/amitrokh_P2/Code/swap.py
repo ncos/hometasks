@@ -58,11 +58,36 @@ class Face:
     def __init__(self, image_, bbox_, predictor):
         self.image = image_
         self.dlibbbox = bbox_
+        self.imh, self.imw, channels = self.image.shape
         self.bbox = (bbox_.left(), bbox_.top(), bbox_.right(), bbox_.bottom())
         predicted = predictor(self.image, self.dlibbbox)
-        self.landmarks = np.array([[p.x, p.y] for p in predicted.parts()])
-        self.imh, self.imw, channels = self.image.shape
+        self.landmarks = np.array([[p.x, p.y] for p in predicted.parts()])       
+        self.old_landmarks = np.array([[p.x, p.y] for p in predicted.parts()])       
+        self.kalmans = [self.init_kalman(p) for p in self.landmarks]        
 
+    def init_kalman(self, p):
+        kalman = cv2.KalmanFilter(4, 2)
+        kalman.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        kalman.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]],np.float32)
+        kalman.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],np.float32) * 0.00003
+        kalman.measurementNoiseCov = np.array([[1,0],[0,1]],np.float32) * 1
+        return kalman 
+
+    def update(self, image_, bbox_, predictor):
+        self.image = image_
+        self.dlibbbox = bbox_
+        self.imh, self.imw, channels = self.image.shape
+        self.bbox = (bbox_.left(), bbox_.top(), bbox_.right(), bbox_.bottom())
+        predicted = predictor(self.image, self.dlibbbox)
+
+        for i, p in enumerate(predicted.parts()):
+            mp = np.array((2,1), np.float32)
+            tp = np.zeros((2,1), np.float32)
+            mp[0] = p.x - self.old_landmarks[i, 0]
+            mp[1] = p.y - self.old_landmarks[i, 1]
+            self.kalmans[i].correct(mp)
+            tp = self.kalmans[i].predict() 
+            self.landmarks[i] = self.old_landmarks[i] + np.array([int(tp[0]), int(tp[1])])
 
 class Delaunay:
     @staticmethod
@@ -150,6 +175,10 @@ class DaSwap:
             arg_parser.print_help()
             exit(1)
 
+        self.debug_level = self.options.debug_level
+        self.detector = dlib.get_frontal_face_detector()
+        self.predictor = dlib.shape_predictor(self.options.predictor_path)
+
         self.src_face = None
         self.dst_face = None
         self.target_video = None
@@ -161,10 +190,6 @@ class DaSwap:
         
         if (self.options.target_video_path != ""):
             self.target_video = cv2.VideoCapture(self.options.target_video_path)
-
-        self.debug_level = self.options.debug_level
-        self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor(self.options.predictor_path)
        
         print okb("Initialization done")
 
@@ -331,7 +356,7 @@ class DaSwap:
         
         thread_pool = Pool(processes=len(thread_args))
         thread_result = thread_pool.map(tps_warp_worker, thread_args)
-
+        thread_pool.close()
         warp_img = np.hstack(thread_result)
         #warp_img = tps_warp(params_x, params_y, self.dst_face.landmarks, lu[0], rd[0], lu[1], rd[1])
 
@@ -347,8 +372,8 @@ class DaSwap:
         
 
     def swap(self):
-        if (self.dst_img != None):
-            if (self.src_img == None):
+        if (self.dst_face != None):
+            if (self.src_face == None):
                 print err("Error! You have specified a target image, but no source image")
             
             if (self.options.method == 'TRI'):
@@ -362,7 +387,10 @@ class DaSwap:
             ret, frame = self.target_video.read()
             (h, w, c) = frame.shape
             fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-            wwriter = cv2.VideoWriter('output.avi', fourcc, 30.0, (w, h))            
+            wwriter = cv2.VideoWriter('output.avi', fourcc, 30.0, (w, h))
+
+            dst_dets = self.detector(frame, 1)
+            self.dst_face = Face(frame, dst_dets[0], self.predictor)
 
             while(self.target_video.isOpened()):
                 ret, result_frame = self.target_video.read()
@@ -373,9 +401,11 @@ class DaSwap:
                 if (len(dst_dets) == 0):
                     print err("No face detected!")
                 else:
-                    self.dst_face = Face(frame, dst_dets[0], self.predictor)
+                    self.dst_face.update(result_frame, dst_dets[0], self.predictor)
                     result_frame = self.tps_swap()
-                    self.draw_landmarks(result_frame, self.dst_face.landmarks)                    
+
+                    if (self.debug_level > 0):               
+                        self.draw_landmarks(result_frame, self.dst_face.landmarks)                    
                          
                 wwriter.write(result_frame)
                 cv2.imshow('frame', result_frame)
