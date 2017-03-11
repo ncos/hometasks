@@ -69,8 +69,8 @@ class Face:
         kalman = cv2.KalmanFilter(4, 2)
         kalman.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
         kalman.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]],np.float32)
-        kalman.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],np.float32) * 0.00003
-        kalman.measurementNoiseCov = np.array([[1,0],[0,1]],np.float32) * 1
+        kalman.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],np.float32) * 0.003
+        kalman.measurementNoiseCov = np.array([[1,0],[0,1]],np.float32) * 0.5
         return kalman 
 
     def update(self, image_, bbox_, predictor):
@@ -88,6 +88,9 @@ class Face:
             self.kalmans[i].correct(mp)
             tp = self.kalmans[i].predict() 
             self.landmarks[i] = self.old_landmarks[i] + np.array([int(tp[0]), int(tp[1])])
+        self.old_landmarks = self.landmarks
+        #self.landmarks = np.array([[p.x, p.y] for p in predicted.parts()])       
+
 
 class Delaunay:
     @staticmethod
@@ -142,7 +145,7 @@ class Delaunay:
 def Uvec(p0, p_vec):
     diff = p_vec - p0
     r = np.einsum('ij,ij->i', diff, diff)
-    return r * np.ma.log(r).filled(0)
+    return -r * np.ma.log(r).filled(0)
 
 def tps(p, a0, ax, ay, w, landmarks):
     ret = a0 + ax * p[0] + ay * p[1]
@@ -182,6 +185,7 @@ class DaSwap:
         self.src_face = None
         self.dst_face = None
         self.target_video = None
+        self.face_swap = False
         if (self.options.source_img != ""):
             self.src_face = self.safe_open_image(self.options.source_img)
         
@@ -194,23 +198,26 @@ class DaSwap:
         print okb("Initialization done")
 
 
-    def safe_open_image(self, path):
+    def safe_open_image(self, path, id_=0):
          image = cv2.imread(path, cv2.IMREAD_COLOR)
          dets = self.detector(image, 1)
-         if (len(dets) == 0):
-            print err("Error! face not found on " + path)
+         if (len(dets) < id_ + 1):
+            print err("Error! face not found on " + path + " with id " + str(id_))
             return None
-         return Face(image, dets[0], self.predictor)
+         return Face(image, dets[id_], self.predictor)
 
 
-    def do_blend(self, face, face_image):
+    def do_blend(self, face, face_image, input_img=None):
+        if (input_img is None):
+            input_img = face.image
+
         mask = np.zeros(face.image.shape, dtype = face.image.dtype)  
         hull = cv2.convexHull(face.landmarks, returnPoints = True)
         cv2.fillConvexPoly(mask, hull, (255, 255, 255))
 
         r = cv2.boundingRect(hull)    
-        center = ((r[0]+int(r[2]/2), r[1]+int(r[3]/2)))        
-        return cv2.seamlessClone(face_image, face.image, mask, center, cv2.NORMAL_CLONE) 
+        center = ((r[0]+int(r[2]/2), r[1]+int(r[3]/2)))
+        return cv2.seamlessClone(face_image, input_img, mask, center, cv2.NORMAL_CLONE) 
 
 
     def get_trimap(self, face, mapping):
@@ -289,13 +296,13 @@ class DaSwap:
         r = diff.dot(diff)
         if (r < 0.000001):
             return 0
-        return r * math.log(r)
+        return -r * math.log(r)
 
 
     def Uvec(self, p0, p_vec):
         diff = p_vec - p0
         r = np.einsum('ij,ij->i', diff, diff)
-        return r * np.ma.log(r).filled(0)
+        return -r * np.ma.log(r).filled(0)
 
 
     def tps(self, p, a0, ax, ay, w, landmarks):
@@ -364,34 +371,96 @@ class DaSwap:
             for j in range(lu[1], rd[1] + 1, 1):      
                 x = warp_img[j - lu[1], i - lu[0], 0]
                 y = warp_img[j - lu[1], i - lu[0], 1]
-                if ((y < self.src_face.imh) and (x < self.src_face.imw)):
+                if ((int(y) < self.src_face.imh) and (int(x) < self.src_face.imw)):
                     face_img[j, i] = self.src_face.image[int(y), int(x)]
-       
-        blend_img = self.do_blend(self.dst_face, face_img)
-        return blend_img
+
+        face_img = self.do_blend(self.dst_face, face_img)
+        if (not self.face_swap):
+            return face_img
+
+        self.src_face.image = np.copy(face_img)
+        (params_x, params_y) = self.get_parameters(self.dst_face.landmarks, self.src_face.landmarks)
+
+        ax = params_x[-3:]
+        wx = params_x[:-3]
+        ay = params_y[-3:]
+        wy = params_y[:-3]
+  
+        lu = np.min(self.src_face.landmarks, axis=0)
+        rd = np.max(self.src_face.landmarks, axis=0)
+        face_img = np.copy(self.src_face.image)
         
+        # Threading
+        len_size = rd[0] + 1 - lu[0]
+        step = len_size/10
+        rngs = range(0, len_size, step) + lu[0]
+
+        thread_args = []
+        thread_result = []
+        for i in xrange(len(rngs)):
+            lu0 = rngs[i]
+            rd0 = min(lu0 + step - 1, rd[0])
+            thread_args.append([params_x, params_y, self.src_face.landmarks, lu0, rd0, lu[1], rd[1]])
+        
+        thread_pool = Pool(processes=len(thread_args))
+        thread_result = thread_pool.map(tps_warp_worker, thread_args)
+        thread_pool.close()
+        warp_img = np.hstack(thread_result)
+
+        for i in range(lu[0], rd[0] + 1, 1):
+            for j in range(lu[1], rd[1] + 1, 1):      
+                x = warp_img[j - lu[1], i - lu[0], 0]
+                y = warp_img[j - lu[1], i - lu[0], 1]
+                if ((y < self.dst_face.imh) and (x < self.dst_face.imw)):
+                    face_img[j, i] = self.dst_face.image[int(y), int(x)]
+
+        face_img = self.do_blend(self.src_face, face_img)                
+        return face_img
+
 
     def swap(self):
         if (self.dst_face != None):
+            out_image_name = os.path.splitext(self.options.target_img)[0] + "Out" + os.path.splitext(self.options.target_img)[1]
+            print okb("Going to write to: " + out_image_name)
+
             if (self.src_face == None):
-                print err("Error! You have specified a target image, but no source image")
-            
+                print okb("Ok, going into the face swap mode...")
+                self.src_face = self.safe_open_image(self.options.target_img, 1)
+                self.face_swap = True
+
             if (self.options.method == 'TRI'):
-                cv2.imwrite("./triangulation_result.png", self.triang_swap())
+                cv2.imwrite(out_image_name, self.triang_swap())
             
             if (self.options.method == 'TPS'):
-                cv2.imwrite("./tps_result.png", self.tps_swap())
+                cv2.imwrite(out_image_name, self.tps_swap())
 
 
         if (self.target_video != None):
+            out_video_name =  os.path.splitext(self.options.target_video_path)[0] + "Out.avi"
+            print okb("Going to write to: " + out_video_name)
             ret, frame = self.target_video.read()
             (h, w, c) = frame.shape
             fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-            wwriter = cv2.VideoWriter('output.avi', fourcc, 30.0, (w, h))
+            wwriter = cv2.VideoWriter(out_video_name, fourcc, 30.0, (w, h))
 
-            dst_dets = self.detector(frame, 1)
+            if (self.src_face == None):
+                print okb("Ok, going into the face swap mode...")
+                self.face_swap = True
+
+            dst_dets = []
+            while len(dst_dets) == 0:
+                ret, frame = self.target_video.read()
+                dst_dets = self.detector(frame, 1)
+            
             self.dst_face = Face(frame, dst_dets[0], self.predictor)
-
+            
+            if (self.face_swap):
+                while len(dst_dets) == 1:
+                    ret, frame = self.target_video.read()
+                    dst_dets = self.detector(frame, 1)
+            
+                self.src_face = Face(frame, dst_dets[1], self.predictor)
+            
             while(self.target_video.isOpened()):
                 ret, result_frame = self.target_video.read()
                 if (ret == False):
@@ -400,12 +469,23 @@ class DaSwap:
                 dst_dets = self.detector(result_frame, 1)
                 if (len(dst_dets) == 0):
                     print err("No face detected!")
+                elif ((len(dst_dets) == 1) and self.face_swap):
+                    print err("Swapping faces, but only one face on the image!")
                 else:
                     self.dst_face.update(result_frame, dst_dets[0], self.predictor)
-                    result_frame = self.tps_swap()
+                    if (self.face_swap):
+                        self.src_face.update(result_frame, dst_dets[1], self.predictor)
+
+                    if (self.options.method == 'TRI'):
+                        result_frame = self.triang_swap()
+                    
+                    if (self.options.method == 'TPS'):
+                        result_frame = self.tps_swap()
 
                     if (self.debug_level > 0):               
-                        self.draw_landmarks(result_frame, self.dst_face.landmarks)                    
+                        self.draw_landmarks(result_frame, self.dst_face.landmarks) 
+                        if (self.face_swap):
+                            self.draw_landmarks(result_frame, self.src_face.landmarks) 
                          
                 wwriter.write(result_frame)
                 cv2.imshow('frame', result_frame)
@@ -472,9 +552,9 @@ if __name__ == '__main__':
     examples = ("")
     parser = MyParser(usage="Usage: " + sys.argv[0] + " <options>", epilog=examples)
     parser.add_option('-s', '--source', dest='source_img',
-        help='specify path to source picture (default: ../Data/me.jpg)', default="../Data/me.jpg")
+        help='specify path to source picture', default="")
     parser.add_option('-t', '--target',  dest='target_img',
-        help='specify path to target image (default: ../Data/rambo.jpg)', default="../Data/rambo.jpg")
+        help='specify path to target image', default="")
     parser.add_option('-v', '--target_video',  dest='target_video_path',
         help='specify path to target video', default="")
     parser.add_option('--predictor',  dest='predictor_path',

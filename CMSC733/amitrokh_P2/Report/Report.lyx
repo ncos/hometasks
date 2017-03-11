@@ -415,12 +415,7 @@ Email: amitrokh@umd.edu
 \end_layout
 
 \begin_layout Title
-Cool IEEE template!
-\end_layout
-
-\begin_layout Abstract
-The abstract goes here.
- 
+Cool IEEE template for Project 2 - Face Swap!
 \end_layout
 
 \begin_layout Peer Review Title
@@ -432,112 +427,249 @@ Introduction
 \end_layout
 
 \begin_layout Standard
-This demo file is intended to serve as a 
-\begin_inset Quotes eld
-\end_inset
-
-starter file
-\begin_inset Quotes erd
-\end_inset
-
- for IEEE conference papers produced under LaTeX
-\begin_inset space \space{}
-\end_inset
-
-using IEEEtran.cls version 1.8b and later.
- I wish you the best of success.
+This thing (swap.py) can swap or replace faces on images or videos using
+ either triangulation or TPS methods!!!
 \end_layout
 
 \begin_layout Standard
 \begin_inset space \hfill{}
 \end_inset
 
-August 26, 2015
+March 8, 2017
 \end_layout
 
 \begin_layout Subsection
-Subsection Heading Here
+Triangulation method
 \end_layout
 
 \begin_layout Standard
-Subsection text here.
-\end_layout
-
-\begin_layout Subsubsection
-Subsubsection Heading Here
-\end_layout
-
-\begin_layout Standard
-Subsubsection text here.
-\end_layout
-
-\begin_layout Section
-Conclusion
+It all starts with landmark detection.
+ Then you find corresponding triangles and try to convert pixels from one
+ triangle onto another.
+ In the end you blend in the face onto the target image.
 \end_layout
 
 \begin_layout Standard
-The conclusion goes here.
-\end_layout
+\begin_inset Graphics
+	filename triangulation_dst.png
+	width 100col%
 
-\begin_layout Section*
-Acknowledgment
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-The authors would like to thank...
+\begin_inset Graphics
+	filename triangulation_src.png
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Map the triangles:
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename triangulation_dst_map.png
+	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename triangulation_src_map.png
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then you copy corresponding pixels using weird matrix transformation:
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename triangulation_result_1.png
+	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename triangulation_result_2.png
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Finally, blend your face with the target:
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename triangulation_result_10.png
+	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename triangulation_result_20.png
+	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+TPS method
+\end_layout
+
+\begin_layout Standard
+TPS is *far* better in terms of implementation and performance - for this
+ project the method was adapted for running on multipe cores!) It is just
+ one step - make the transformation function and apply it!
+\end_layout
+
+\begin_layout Standard
+Before blending:
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename tps_result_0.png
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+After:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename tps_result.png
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Sexy, right?
+\end_layout
+
+\begin_layout Subsection
+Videos
+\end_layout
+
+\begin_layout Standard
+Working with videos is basically like working with images.
+ Many images...
+ So, sometimes those people on videos move around and...
+ flicker.
+ We have a Kalman filter to counter that (one kalman for each landmark)
+ - see the difference between './TestSet/Test1Out_no_kalman' and './TestSet/Test1O
+ut_tps_kalman' to see the difference (the first one is done with kalman
+ filter off).
+ Another video (just for the reference) is './TestSet/Test2Out_tri', where
+ the face of Scarlett is overlayed on the random face on 'Test2Out_tri'
+ video - that was made just to show that you can also use the triangulation
+ method to make videos (obviously!), as other videos were made with TPS
+ - it is faster).
+\end_layout
+
+\begin_layout Standard
+The video quality also plays its role - check out the './TestSet/Test3Out'!
+ Also see './TestSet/Test3Out_debug' to see how face detection fails.
+ Face detection also fails when people rotate their head too much:
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename posessed.png
+	width 100col%
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "IEEEhowto:kopka"
+key "key-2"
 
 \end_inset
 
- H.
-\begin_inset space ~
-\end_inset
-
-Kopka and P.
-\begin_inset space ~
-\end_inset
-
-W.
- Daly, 
-\emph on
-A Guide to LaTeX
-\emph default
-, 3rd
-\begin_inset space ~
-\end_inset
-
-ed.
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-hskip
-\end_layout
-
-\end_inset
-
- 1em plus 0.5em minus 0.4em
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-relax
-\end_layout
-
-\end_inset
-
- Harlow, England: Addison-Wesley, 1999.
+Patrick Pérez, Michel Gangnet, and Andrew Blake.
+ Poisson image editing.
+ In ACM Transactions on Graphics (TOG), volume 22, pages 313–318.
+ ACM, 2003.
 \end_layout
 
 \end_body
