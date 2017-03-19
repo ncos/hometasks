@@ -9,7 +9,7 @@ y_line_1 = [1527 1997; 2269 3175];
 y_line_2 = [59 3239;   641  2023];
 x_line_0 = [94 2012;   1505 1994];
 x_line_1 = [89 3185;   2262 3166];
-z_line_0 = [1456 1904;  1477 617];
+z_line_0 = [1458 1904;  1477 617];
 z_line_1 = [645 1900;    631 965];
 z_line_2 = [290 1904;    265 952];
 h_line   = [1269 1972; 1273 1192];
@@ -30,11 +30,12 @@ text(0, 40,  ['X vanishing point: (', num2str(floor(x)),', ',num2str(floor(y)), 
 text(x, y, ['\leftarrow X vanishing point: (', num2str(floor(x)),', ',num2str(floor(y)), ')'],'Color','green','FontSize',10,'FontWeight','bold');
 display(['Vanishing point on x axis: (', num2str(x),', ',num2str(y), ')']);
 
+
 % z axis
 [x,y] = intersect_(z_line_0, z_line_1);
-text(0, 120,  ['Z vanishing point: (', num2str(floor(x)),', ',num2str(floor(y)), ')'],'Color','green','FontSize',10,'FontWeight','bold');
+text(0, 120,  ['Z vanishing point: (', num2str(floor(x)),', ',num2str(floor(y*10)), ')'],'Color','green','FontSize',10,'FontWeight','bold');
 text(x, y, ['\leftarrow Z vanishing point: (', num2str(floor(x)),', ',num2str(floor(y)), ')'],'Color','green','FontSize',10,'FontWeight','bold');
-display(['Vanishing point on z axis: (', num2str(x),', ',num2str(y), ')']);
+display(['Vanishing point on z axis: (', num2str(x),', ',num2str(y*10), ')']);
 
 % y axis
 [x,y] = intersect_(y_line_0, y_line_2);
@@ -45,6 +46,8 @@ line([x,y_line_0(2,1)],[y,y_line_0(2,2)], 'Color','white','LineStyle','--','Line
 line([x,y_line_1(1,1)],[y,y_line_1(1,2)], 'Color','white','LineStyle','--','LineWidth',0.75);
 line([x,y_line_2(2,1)],[y,y_line_2(2,2)], 'Color','white','LineStyle','--','LineWidth',0.75);
 horizon = [0 y; 10000 y];
+v_ = [x;y;1];
+
 
 % intersecting b1-b2 with horizon
 b1b2 = [h_line(1,1) h_line(1,2); z_line_1(1,1) z_line_1(1,2)];
@@ -70,10 +73,22 @@ display('d1 and d2:');
 display(d1);
 display(d2);
 
-h1 = 1870;
+h1 = 1780;
 h2 = h1*d2/d1;
 display('h2:');
 display(h2);
+
+
+%--------------------------------------------------------------
+f = 4;
+K = [f 0 size(A,2)/2;
+0 f size(A,1)/2;
+0 0 1];
+
+
+r3 = inv(K)*v_/norm(inv(K)*v_)
+pitch = atan(-r3(1)/norm(r3(2:3)))
+roll = atan(r3(2)/r3(3))
 
 
 function z = l_(x1, y1, x2, y2)

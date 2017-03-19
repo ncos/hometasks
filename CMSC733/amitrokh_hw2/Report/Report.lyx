@@ -415,7 +415,7 @@ Email: amitrokh@umd.edu
 \end_layout
 
 \begin_layout Title
-Cool IEEE template!
+Cool IEEE template for homework 2!
 \end_layout
 
 \begin_layout Abstract
@@ -432,112 +432,108 @@ Introduction
 \end_layout
 
 \begin_layout Standard
-This demo file is intended to serve as a 
-\begin_inset Quotes eld
+We follow the geometry from this picture:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename /home/ncos/hometasks/CMSC733/amitrokh_hw2/Code/foo.png
+	width 100col%
+
 \end_inset
 
-starter file
-\begin_inset Quotes erd
-\end_inset
 
- for IEEE conference papers produced under LaTeX
-\begin_inset space \space{}
-\end_inset
-
-using IEEEtran.cls version 1.8b and later.
- I wish you the best of success.
 \end_layout
 
 \begin_layout Standard
 \begin_inset space \hfill{}
 \end_inset
 
-August 26, 2015
+March 17, 2017
 \end_layout
 
 \begin_layout Subsection
-Subsection Heading Here
+Door height estimation:
 \end_layout
 
 \begin_layout Standard
-Subsection text here.
-\end_layout
+\begin_inset Graphics
+	filename /home/ncos/hometasks/CMSC733/amitrokh_hw2/Code/untitled.jpg
+	width 100col%
 
-\begin_layout Subsubsection
-Subsubsection Heading Here
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-Subsubsection text here.
-\end_layout
-
-\begin_layout Section
-Conclusion
+So in short:
 \end_layout
 
 \begin_layout Standard
-The conclusion goes here.
-\end_layout
-
-\begin_layout Section*
-Acknowledgment
+Vanishing point on 'x' axis: (-292177.8, 5740.5) - concidered infinite
 \end_layout
 
 \begin_layout Standard
-The authors would like to thank...
+Vanishing point on 'z' axis: (1054.4, 292423.3) - concidered infinite
 \end_layout
 
-\begin_layout Bibliography
-\begin_inset CommandInset bibitem
-LatexCommand bibitem
-key "IEEEhowto:kopka"
-
-\end_inset
-
- H.
-\begin_inset space ~
-\end_inset
-
-Kopka and P.
-\begin_inset space ~
-\end_inset
-
-W.
- Daly, 
-\emph on
-A Guide to LaTeX
-\emph default
-, 3rd
-\begin_inset space ~
-\end_inset
-
-ed.
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-hskip
+\begin_layout Standard
+Vanishing point on 'y' axis: (1024.5, 1221.8)
 \end_layout
 
-\end_inset
-
- 1em plus 0.5em minus 0.4em
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-relax
+\begin_layout Standard
+Yellow line is the horizon line.
 \end_layout
 
-\end_inset
+\begin_layout Standard
+Now follow the image from intro (everything is solved geometrically, by
+ finding intersections between lines):
+\end_layout
 
- Harlow, England: Addison-Wesley, 1999.
+\begin_layout Standard
+u: (-5232.9744, 1221.7722) 
+\end_layout
+
+\begin_layout Standard
+t2: (634.4427, 1194.9221)
+\end_layout
+
+\begin_layout Standard
+d1 = 705.1569
+\end_layout
+
+\begin_layout Standard
+d2 = 935.1048
+\end_layout
+
+\begin_layout Standard
+h1 = 1780 - my height in mm
+\end_layout
+
+\begin_layout Standard
+h2 = h1*d2/d1 - the result!
+\end_layout
+
+\begin_layout Standard
+So the resulting door height is (in mm):
+\end_layout
+
+\begin_layout Standard
+2360 mm
+\end_layout
+
+\begin_layout Subsection
+Camera height estimation:
+\end_layout
+
+\begin_layout Standard
+In pixels: 1900 - 1221 = 679 (door base - horizon).
+\end_layout
+
+\begin_layout Standard
+So camera height = 679/935.1 * 2360 = 1713.7mm (which is close to truth -
+ Chinmaya was taking a picture)
 \end_layout
 
 \end_body
