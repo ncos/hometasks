@@ -7,4 +7,9 @@ function E = EssentialMatrixFromFundamentalMatrix(F,K)
 
 %% Your Code goes here
 
+[U, ~, V] = svd(K' * F * K);
+
+D = eye(3);
+D(3,3) = 0;
+E = U*D*V';
 end
