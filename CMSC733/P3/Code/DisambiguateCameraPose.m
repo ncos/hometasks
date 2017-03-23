@@ -1,4 +1,4 @@
-function [C,R,X] = DisambiguateCameraPose(Cset, Rset, Xset)
+function [C, R, X] = DisambiguateCameraPose(Cset, Rset, Xset)
 %% Inputs:
 % Cset and Rset: 4 configurations of camera centers and rotations
 % Xset: 4 sets of triangulated points from four camera pose configurations
@@ -13,6 +13,20 @@ function [C,R,X] = DisambiguateCameraPose(Cset, Rset, Xset)
 % The best camera configuration, (C,R,X) is the one that produces the max 
 % number of points satisfying the cheirality condition.
 
-%% Your code goes here
+
+
+counts = zeros(length(Cset), 1);
+
+for i = 1 : length(Cset)
+  xmc = bsxfun(@minus, Xset{i}', Cset{i});
+  % score = (Rset{i}(:,3)' * xmc) > 0;
+  score = (Xset{i}(:,3)' > 0) & (Rset{i}(:,3)' * xmc) > 0;
+  counts(i) = sum(score);
+end
+
+[~, idx] = max(counts);
+C = Cset{idx};
+R = Rset{idx};
+X = Xset{idx};
 
 end
