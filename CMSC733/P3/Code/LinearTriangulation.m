@@ -7,8 +7,6 @@ function [X] = LinearTriangulation(K, C1, R1, C2, R2, x1, x2)
 %% Outputs: 
 % X: Nx3 matrix whose row represents 3D triangulated point.
 
-%% Your Code goes here
-
 
 P1 = K * R1 * [eye(3) -C1];
 P2 = K * R2 * [eye(3) -C2];
