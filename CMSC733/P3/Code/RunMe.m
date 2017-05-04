@@ -29,3 +29,20 @@ end
 ... change the number of corr. data.
 visualize_matches(image_count, M, XM, YM); % Requires GetInliersRANSAC...
 ... and EstimateFundamentalMatrix.m
+
+
+F = EstimateFundamentalMatrix(x1, x2);
+E = EssentialMatrixFromFundamentalMatrix(F, K);
+[Cset, Rset] = ExtractCameraPose(E);
+
+
+Xset = cell(4,1);
+for i=1 : 4
+    Xset{i} = LinearTriangulation(K, [0; 0; 0], eye(3), Cset{i}, Rset{i}, x1, x2);
+end
+
+[Cset, Rset, Xset] = DisambiguateCameraPose(Cset, Rset, Xset);
+
+
+
+
