@@ -1,6 +1,5 @@
 #include "CLfunctions.h"
 
-
 //Helper functions
 void oclErrorString(cl_int error)
 {
@@ -166,24 +165,33 @@ void World::WorldInit()
         //};
     //};
 
-    platf_num = 0;
+    //platf_num = 0;
 
-    cl_context_properties cprops[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[platf_num])(), 0};
+    //cl_context_properties cprops[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[platf_num])(), 0};
     //cl_context_properties props[] = {CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
     //                                 CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
     //                                 CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[platf_num])(),
     //                                 0}; 
 
-    context = cl::Context(CL_DEVICE_TYPE_GPU, cprops, NULL, NULL, &err);
-    //context = cl::Context(CL_DEVICE_TYPE_GPU||CL_DEVICE_TYPE_CPU, props,  NULL, NULL, &err);
-    oclErrorString(err); //Printing out error (if any)
-    //We'd created a context
+    std::vector<cl::Device> all_devices;
+    platformList[0].getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
+    cl::Device default_device = all_devices[0];
+    std::cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() << "\n";
+    
+      
+    context = cl::Context({default_device});
+    queue = cl::CommandQueue(context,default_device);
 
-    devices = context.getInfo<CL_CONTEXT_DEVICES>();
+
+    //context = cl::Context(CL_DEVICE_TYPE_GPU, cprops, NULL, NULL, &err);
+    //context = cl::Context(CL_DEVICE_TYPE_GPU||CL_DEVICE_TYPE_CPU, props,  NULL, NULL, &err);
+    //oclErrorString(err); //Printing out error (if any)
+    //We'd created a context
+    //devices = context.getInfo<CL_CONTEXT_DEVICES>();
 
     //Creating a queue:
-    queue = cl::CommandQueue(context, devices[0], 0, &err);
-    oclErrorString(err); //Printing out error (if any)
+    //queue = cl::CommandQueue(context, devices[0], 0, &err);
+    //oclErrorString(err); //Printing out error (if any)
 
 
     getDevInfo(devices[0]); //Printing out device information
@@ -202,8 +210,10 @@ cl::Kernel World::CreateKernel(std::string kernel_path)
     std::cout<<"("<<kernel_path<<")\n\n";
     int pl = kernel_source.size();
     //Program setup
-    cl::Program::Sources source(1, std::make_pair(kernel_source.c_str(), pl));
-    cl::Program program(context, source);
+    // cl::Program::Sources source(1, std::make_pair(kernel_source.c_str(), pl));
+    cl::Program::Sources sources;    
+    sources.push_back({kernel_source.c_str(),kernel_source.length()});
+    cl::Program program(context, sources);
     //This will build the kernel code
     cl_int err = program.build(devices, "");
     oclErrorString(err);
