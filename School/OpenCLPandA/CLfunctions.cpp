@@ -78,19 +78,23 @@ void oclErrorString(cl_int error)
 
 	if (err != "CL_SUCCESS")
 	{
-		std::cout<<"WARNING: "<<err<<"\n";
+		std::cout << "WARNING: " << err << "\n";
 	};
 
 };
 
 
-GLuint CreateVBO(const void* data, int dataSize, GLenum target, GLenum usage)
+GLuint CreateVBO(std::vector<float> vec, GLenum target, GLenum usage)
 {
     GLuint id = 0;  // 0 is reserved, glGenBuffersARB() will return non-zero id if success
+    int dataSize = vec.size() * sizeof(float); // Assume the data is float
+    float *data = new float[vec.size()];
 
     glGenBuffers(1, &id);                        // create a vbo
     glBindBuffer(target, id);                    // activate vbo id to use
     glBufferData(target, dataSize, data, usage); // upload data to video card
+
+    delete [] data;
 
     // check data size in VBO is same as input array, if not return 0 and delete VBO
     int bufferSize = 0;
@@ -103,8 +107,15 @@ GLuint CreateVBO(const void* data, int dataSize, GLenum target, GLenum usage)
         //printf("[createVBO()] Data size is mismatch with input array\n");
     }
     //this was important for working inside blender!
-    glBindBuffer(target, 0);
-    return id;      // return VBO id
+    glBindBuffer(target, id);
+
+
+    float *internal = (float *) glMapBuffer(target, GL_WRITE_ONLY);
+    for(unsigned int i = 0; i < vec.size(); ++i)
+        internal[i] = vec[i];
+
+    glUnmapBuffer(target);
+    return id;     
 };
 
 
@@ -165,7 +176,7 @@ void World::WorldInit()
         //};
     //};
 
-    //platf_num = 0;
+    platf_num = 0;
 
     //cl_context_properties cprops[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[platf_num])(), 0};
     //cl_context_properties props[] = {CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
@@ -173,26 +184,30 @@ void World::WorldInit()
     //                                 CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[platf_num])(),
     //                                 0}; 
 
-    std::vector<cl::Device> all_devices;
-    platformList[0].getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
-    cl::Device default_device = all_devices[0];
-    std::cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() << "\n";
+    cl_context_properties props[] = {CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
+                                     CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
+                                     CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[platf_num])(),
+                                     0};
+
+
+    //platformList[0].getDevices(CL_DEVICE_TYPE_ALL, &devices);
+    //cl::Device default_device = devices[0];
+    //std::cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() << "\n";
     
       
-    context = cl::Context({default_device});
-    queue = cl::CommandQueue(context,default_device);
+    //context = cl::Context({default_device});
+    //queue = cl::CommandQueue(context,default_device);
 
 
-    //context = cl::Context(CL_DEVICE_TYPE_GPU, cprops, NULL, NULL, &err);
+    context = cl::Context(CL_DEVICE_TYPE_GPU, props, NULL, NULL, &err);
     //context = cl::Context(CL_DEVICE_TYPE_GPU||CL_DEVICE_TYPE_CPU, props,  NULL, NULL, &err);
-    //oclErrorString(err); //Printing out error (if any)
+    oclErrorString(err); //Printing out error (if any)
     //We'd created a context
-    //devices = context.getInfo<CL_CONTEXT_DEVICES>();
+    devices = context.getInfo<CL_CONTEXT_DEVICES>();
 
     //Creating a queue:
-    //queue = cl::CommandQueue(context, devices[0], 0, &err);
-    //oclErrorString(err); //Printing out error (if any)
-
+    queue = cl::CommandQueue(context, devices[0], 0, &err);
+    oclErrorString(err); //Printing out error (if any)
 
     getDevInfo(devices[0]); //Printing out device information
     glewInit();
@@ -208,7 +223,6 @@ cl::Kernel World::CreateKernel(std::string kernel_path)
     //Stringify data
     std::string kernel_source(std::istreambuf_iterator<char>(file),(std::istreambuf_iterator<char>()));
     std::cout<<"("<<kernel_path<<")\n\n";
-    int pl = kernel_source.size();
     //Program setup
     // cl::Program::Sources source(1, std::make_pair(kernel_source.c_str(), pl));
     cl::Program::Sources sources;    
@@ -217,8 +231,14 @@ cl::Kernel World::CreateKernel(std::string kernel_path)
     //This will build the kernel code
     cl_int err = program.build(devices, "");
     oclErrorString(err);
+
+    if (err!=CL_SUCCESS) {
+        std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0])<<"\n";
+        exit(1);
+    }
+    
     //Kernel to pass data in
-    kernel = cl::Kernel(program, "OpenCLPandA", &err);
+    kernel = cl::Kernel(program, "oclp_kernel", &err);
     oclErrorString(err); //Printing out error (if any)
     return kernel;
 };
@@ -260,13 +280,13 @@ void World::LoadEverybody(cl::Kernel kernel,
 {
     //Store the number of particles and the size in bytes of our arrays
     cl_int err;
-    int array_size = pos.size() * sizeof(float);
+    
     //Create VBOs (defined in util.cpp)
-    gl_p_vbo = CreateVBO(&pos, array_size, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-    gl_v_vbo = CreateVBO(&vel, array_size, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-    gl_r_vbo = CreateVBO(&r,   array_size, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-    gl_m_vbo = CreateVBO(&m,   array_size, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-    gl_q_vbo = CreateVBO(&q,   array_size, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+    gl_p_vbo = CreateVBO(pos, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+    gl_v_vbo = CreateVBO(vel, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+    gl_r_vbo = CreateVBO(r,   GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+    gl_m_vbo = CreateVBO(m,   GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+    gl_q_vbo = CreateVBO(q,   GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
     //Make sure OpenGL is finished before we proceed
     glFinish();
     //Create OpenCL buffer from GL VBO
@@ -298,13 +318,11 @@ void World::LoadEverybody(cl::Kernel kernel,
     oclErrorString(err); //Printing out error (if any)
 
 
-    cl_a = cl::Buffer(context, CL_MEM_READ_WRITE, array_size, NULL, &err);
-    cl::Event event;
-    err = queue.enqueueWriteBuffer(cl_a, CL_TRUE, 0, sizeof(float) * 10, a, NULL, &event);
-    err = kernel.setArg(6, cl_a);
-
-
-    oclErrorString(err); //Printing out error (if any)
+    //cl_a = cl::Buffer(context, CL_MEM_READ_WRITE, array_size, NULL, &err);
+    //cl::Event event;
+    //err = queue.enqueueWriteBuffer(cl_a, CL_TRUE, 0, sizeof(float) * 10, a, NULL, &event);
+    //err = kernel.setArg(6, cl_a);
+    //oclErrorString(err); //Printing out error (if any)
     queue.finish();
 };
 
@@ -324,20 +342,22 @@ void World::StartApplication()
     //Map OpenGL buffer object for writing from OpenCL
     //this passes in the vector of VBO buffer objects
     err = queue.enqueueAcquireGLObjects(&cl_vbos, NULL, &event_);
+    //err = clEnqueueAcquireGLObjects(queue, 1, &(cl_vbos[0]), 0, NULL, NULL);
     oclErrorString(err); //Printing out error (if any)
     queue.finish();
     //Execute the kernel
-    err = queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(num), cl::NullRange, NULL, &event_);
+    //err = queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(num), cl::NullRange, NULL, &event_);
+    err = queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(num), cl::NullRange);
+    
     oclErrorString(err); //Printing out error (if any)
     queue.finish();
     //Release the VBOs so OpenGL can play with them
     err = queue.enqueueReleaseGLObjects(&cl_vbos, NULL, &event_);
     oclErrorString(err); //Printing out error (if any)
 
-    float c_done[10];
-    err = queue.enqueueReadBuffer(cl_a, CL_TRUE, 0, sizeof(float) * num, &c_done, NULL, &event_);
-
-    std::cout<<c_done[0]<<" -- "<<c_done[1]<<"\n";
+    //float c_done[10];
+    //err = queue.enqueueReadBuffer(cl_a, CL_TRUE, 0, sizeof(float) * num, &c_done, NULL, &event_);
+    //std::cout<<c_done[0]<<" -- "<<c_done[1]<<"\n";
 
     queue.finish();
 };

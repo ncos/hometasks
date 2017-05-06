@@ -13,6 +13,7 @@ World world;
 
 void drawScene() 
 {
+
 	//Clear information from last draw
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
@@ -32,25 +33,21 @@ void drawScene()
 	////OpenCL objects
 	glPointSize(5.);
 
-	glColor3f(0.0, 0.0, 1.0);
+	glColor3f(1.0, 0.0, 1.0);
 	world.StartApplication();
     //printf("vertex buffer\n");
     glBindBuffer(GL_ARRAY_BUFFER, world.gl_p_vbo);
     glVertexPointer(3, GL_FLOAT, 0, 0);
 
-
-
     //printf("enable client state\n");
     glEnableClientState(GL_VERTEX_ARRAY);
     //glEnableClientState(GL_COLOR_ARRAY);
 
+    //glColorPointer( 3, GL_FLOAT, 0, colors );
+
+
     //Need to disable these for blender
     glDisableClientState(GL_NORMAL_ARRAY);
-
-
-
-
-
 
     //printf("draw arrays\n");
     glDrawArrays(GL_POINTS, 0, world.num);
@@ -67,12 +64,12 @@ void drawScene()
 void create_pandas()
 {
 	//Pinky
-	Pinky.position.x = 0;
-	Pinky.position.y = 0;
-	Pinky.position.z = 0;
+	Pinky.position.x = 10;
+	Pinky.position.y = 20;
+	Pinky.position.z = 10;
 
-	Pinky.speed.x = 0;
-	Pinky.speed.y = 0;
+	Pinky.speed.x = 5;
+	Pinky.speed.y = 5;
 	Pinky.speed.z = 0;
 
 	Pinky.weight = 2;
@@ -149,6 +146,10 @@ void random_panda(int num)
 		Panda.speed.y=float(rand() % 1400 -700)/10.0;
 		Panda.speed.z=float(rand() % 1400 -700)/10.0;
 
+    	Panda.color.R=float(rand() % 1000)/1000.0;
+		Panda.color.G=float(rand() % 1000)/1000.0;
+		Panda.color.B=float(rand() % 1000)/1000.0;
+
 		world.AppendNewObject(Panda);
 	};
 };
@@ -177,14 +178,14 @@ int main(int argc, char** argv) {
 
 
 	create_pandas();
-	world.AppendNewObject(Pinky); //Configuring new object
-	world.AppendNewObject(Blacky); //Configuring new object
+	//world.AppendNewObject(Pinky); //Configuring new object
+	//world.AppendNewObject(Blacky); //Configuring new object
 	//world.AppendNewObject(Pawy); //Configuring new object
 	//world.AppendNewObject(Cuddly); //Configuring new object
-	//random_panda(100);
+	random_panda(100000);
 
 
-	world.ConfigureApplication("My_kernel.cl");
+	world.ConfigureApplication("gpu_kernel.cl");
 
 	//Set handler functions for drawing, keypresses, window resizes, etc.
 	glutDisplayFunc(drawScene);

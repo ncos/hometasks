@@ -1,6 +1,8 @@
 #ifndef CLFUNCTIONS_H
 #define CLFUNCTIONS_H
 
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
 
 #include <cstdio>
 #include <cstdlib>
@@ -11,16 +13,13 @@
 #include <iterator>
 #include <stdlib.h>
 
+#include <CL/cl2.hpp>
 
 #include <GL/glew.h>
 #include <GL/glut.h>
-#include <GL/gl.h>
 #include <GL/glu.h>
-
-#define CL_USE_DEPRECATED_OPENCL_1_1_APIS
-#include <CL/cl.h>
-#undef CL_VERSION_1_2
-#include <CL/cl2.hpp>
+#include <GL/glx.h>
+#include <GL/gl.h>
 
 
 #include "pandatype.h"

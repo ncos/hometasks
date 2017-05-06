@@ -1,7 +1,6 @@
 #ifndef GLFUNCTIONS_H
 #define GLFUNCTIONS_H
 
-//#include "CLfunctions.cpp"
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
