@@ -137,6 +137,7 @@ void random_panda(int num)
 {
 	for (int i = 0; i < num; i++)
 	{
+        // Panda because why not
 		panda Panda;
 		Panda.position.x=rand() % 120 -60;
 		Panda.position.y=rand() % 120 -60;
@@ -165,7 +166,7 @@ int main(int argc, char** argv) {
 	glutInitWindowSize(960, 1000); //Set the window size
 	
 	//Create the window
-	glutCreateWindow("OpenCLPanda");
+	glutCreateWindow("OpenCLParticle");
 	initRendering(); //Initialize rendering
 
 	//Adjust properties

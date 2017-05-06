@@ -1,15 +1,15 @@
 CC=g++
-CFLAGS=-c -Wall -std=c++11 -g
-LDFLAGS=-lglut -lGL -lGLU -lGLEW -lOpenCL -g
-SOURCES=CLfunctions.cpp GLfunctions.cpp OpenCLPandA.cpp info.cpp opencl_demo.cpp
+CFLAGS=-c -Wall -std=c++11
+LDFLAGS=-lglut -lGL -lGLU -lGLEW -lOpenCL
+SOURCES=CLfunctions.cpp GLfunctions.cpp OpenCLParticle.cpp info.cpp opencl_demo.cpp
 HEADERS=CLfunctions.h GLfunctions.h pandatype.h
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=oclp
 
 all: info demo $(SOURCES) $(EXECUTABLE)
     
-$(EXECUTABLE): CLfunctions.o GLfunctions.o OpenCLPandA.o $(HEADERS)
-	$(CC) CLfunctions.o GLfunctions.o OpenCLPandA.o -o $@ $(LDFLAGS)
+$(EXECUTABLE): CLfunctions.o GLfunctions.o OpenCLParticle.o $(HEADERS)
+	$(CC) CLfunctions.o GLfunctions.o OpenCLParticle.o -o $@ $(LDFLAGS)
 
 info: info.o
 	$(CC) info.o -o $@ $(LDFLAGS)
