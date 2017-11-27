@@ -1,0 +1,27 @@
+[submodule "CMSC740/nori/ext/filesystem"]
+	path = CMSC740/nori/ext/filesystem
+	url = https://github.com/wjakob/filesystem
+[submodule "CMSC740/nori/ext/tbb"]
+	path = CMSC740/nori/ext/tbb
+	url = https://github.com/wjakob/tbb
+[submodule "CMSC740/nori/ext/pugixml"]
+	path = CMSC740/nori/ext/pugixml
+	url = http://github.com/zeux/pugixml
+[submodule "CMSC740/nori/ext/tinyformat"]
+	path = CMSC740/nori/ext/tinyformat
+	url = https://github.com/wjakob/tinyformat
+[submodule "CMSC740/nori/ext/hypothesis"]
+	path = CMSC740/nori/ext/hypothesis
+	url = https://github.com/wjakob/hypothesis
+[submodule "CMSC740/nori/ext/pcg32"]
+	path = CMSC740/nori/ext/pcg32
+	url = https://github.com/wjakob/pcg32
+[submodule "CMSC740/nori/ext/nanogui"]
+	path = CMSC740/nori/ext/nanogui
+	url = https://github.com/wjakob/nanogui
+[submodule "CMSC740/nori/ext/zlib"]
+	path = CMSC740/nori/ext/zlib
+	url = https://github.com/mitsuba-renderer/zlib
+[submodule "CMSC740/nori/ext/openexr"]
+	path = CMSC740/nori/ext/openexr
+	url = https://github.com/mitsuba-renderer/openexr/
