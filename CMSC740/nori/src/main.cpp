@@ -20,6 +20,7 @@
 #include <nori/scene.h>
 #include <nori/camera.h>
 #include <nori/block.h>
+#include <nori/block_plain.h>
 #include <nori/timer.h>
 #include <nori/bitmap.h>
 #include <nori/sampler.h>
@@ -31,6 +32,8 @@
 #include <thread>
 
 using namespace nori;
+
+ImageBlock *globalLightBlock;
 
 static void renderBlock(const Scene *scene, Sampler *sampler, ImageBlock &block) {
     const Camera *camera = scene->getCamera();
@@ -72,12 +75,18 @@ static void render(Scene *scene, const std::string &filename) {
     BlockGenerator blockGenerator(outputSize, NORI_BLOCK_SIZE);
 
     /* Allocate memory for the entire output image and clear it */
+    globalLightBlock = new ImageBlockPlain(outputSize);
     ImageBlock result(outputSize, camera->getReconstructionFilter());
     result.clear();
 
+    ImageBlock result_combined(outputSize, camera->getReconstructionFilter());
+    result_combined.clear();
+
     /* Create a window that visualizes the partially rendered result */
     nanogui::init();
+    NoriScreen *screen_light = new NoriScreen(*globalLightBlock);
     NoriScreen *screen = new NoriScreen(result);
+    //NoriScreen *screen_combined = new NoriScreen(result_combined);
 
     /* Do the following in parallel and asynchronously */
     std::thread render_thread([&] {
@@ -109,15 +118,19 @@ static void render(Scene *scene, const std::string &filename) {
                 /* The image block has been processed. Now add it to
                    the "big" block that represents the entire image */
                 result.put(block);
+
             }
         };
 
         /// Uncomment the following line for single threaded rendering
-        // map(range);
+        //map(range);
 
         /// Default: parallel rendering
         tbb::parallel_for(range, map);
 
+        /* BDPT frame join */
+        //result_combined.put(result);
+        //result_combined.put(*globalLightBlock);
         cout << "done. (took " << timer.elapsedString() << ")" << endl;
     });
 
@@ -127,8 +140,13 @@ static void render(Scene *scene, const std::string &filename) {
     /* Shut down the user interface */
     render_thread.join();
 
+
     delete screen;
-    nanogui::shutdown();
+    delete screen_light;
+    //delete screen_combined;
+    //nanogui::shutdown();
+
+    int samplecount = scene->getSampler()->getSampleCount();
 
     /* Now turn the rendered image block into
        a properly normalized bitmap */
@@ -139,10 +157,23 @@ static void render(Scene *scene, const std::string &filename) {
     size_t lastdot = outputName.find_last_of(".");
     if (lastdot != std::string::npos)
         outputName.erase(lastdot, std::string::npos);
-    outputName += ".exr";
+    outputName += "_" + std::to_string(samplecount) + ".exr";
 
     /* Save using the OpenEXR format */
     bitmap->save(outputName);
+
+    std::string outputName2 = filename;
+    size_t lastdot2 = outputName2.find_last_of(".");
+    if (lastdot2 != std::string::npos)
+        outputName2.erase(lastdot2, std::string::npos);
+    outputName2 += "_combined_" + std::to_string(samplecount) + ".exr";
+
+    
+    std::unique_ptr<Bitmap> bitmap2(globalLightBlock->toBitmap());
+    /* Save using the OpenEXR format */
+    bitmap2->save(outputName2);
+
+    delete globalLightBlock;
 }
 
 int main(int argc, char **argv) {

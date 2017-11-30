@@ -30,7 +30,7 @@ NORI_NAMESPACE_BEGIN
  *
  * This data structure records local information about a ray-triangle intersection.
  * This includes the position, traveled ray distance, uv coordinates, as well
- * as well as two local coordinate frames (one that corresponds to the true
+ * as two local coordinate frames (one that corresponds to the true
  * geometry, and one that is used for shading computations).
  */
 struct Intersection {

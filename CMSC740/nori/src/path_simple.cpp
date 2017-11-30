@@ -65,10 +65,10 @@ public:
             float dot1 = std::max((-l2px_local).dot(its.shFrame.toLocal(n)), 0.0f);
             float dot2 = std::max(its.shFrame.cosTheta(l2px_local), 0.0f);
             float geo = dot1 * dot2 / ((p - its.p).dot(p - its.p));
-
+            
             ret = radiance * bsdf * Color3f(geo / (emitter->PDF() * emitter_pdf[idx]));
         }
-        
+
         if (sampler->next1D() > 0.95) return ret;
 
         BSDFQueryRecord bsdfRecord{its.shFrame.toLocal(-ray.d)};

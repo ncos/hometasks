@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 2.8.3)
 project(nori)
 
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -g")
+set(CMAKE_BUILD_TYPE Release)
+
 add_subdirectory(ext ext_build)
 
 include_directories(
@@ -41,6 +44,7 @@ add_executable(nori
   include/nori/bbox.h
   include/nori/bitmap.h
   include/nori/block.h
+  include/nori/block_plain.h
   include/nori/bsdf.h
   include/nori/accel.h
   include/nori/camera.h
@@ -67,10 +71,12 @@ add_executable(nori
   # Source code files
   src/bitmap.cpp
   src/block.cpp
+  src/block_plain.cpp
   src/accel.cpp
   src/chi2test.cpp
   src/common.cpp
   src/diffuse.cpp
+  src/diffuse_both.cpp
   src/gui.cpp
   src/independent.cpp
   src/main.cpp
@@ -91,6 +97,8 @@ add_executable(nori
   src/simple.cpp
   src/path_simple.cpp
   src/path.cpp
+  src/bdpt.cpp
+  src/bdpt_better.cpp
   src/whitted.cpp
   src/area.cpp
   src/ao.cpp

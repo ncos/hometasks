@@ -57,7 +57,7 @@ public:
     ImageBlock(const Vector2i &size, const ReconstructionFilter *filter);
     
     /// Release all memory
-    ~ImageBlock();
+    virtual ~ImageBlock();
     
     /// Configure the offset of the block within the main image
     void setOffset(const Point2i &offset) { m_offset = offset; }
@@ -80,7 +80,7 @@ public:
      * This entails normalizing all pixels and discarding
      * the border region.
      */
-    Bitmap *toBitmap() const;
+    virtual Bitmap *toBitmap() const;
 
     /// Convert a bitmap into an image block
     void fromBitmap(const Bitmap &bitmap);
@@ -89,7 +89,11 @@ public:
     void clear() { setConstant(Color4f()); }
 
     /// Record a sample with the given position and radiance value
-    void put(const Point2f &pos, const Color3f &value);
+    virtual void put(const Point2f &pos, const Color3f &value);
+
+    virtual void put_special(const Point2f &pos, const Color3f &value) {
+        this->put(pos, value);
+    }
 
     /**
      * \brief Merge another image block into this one
@@ -97,7 +101,7 @@ public:
      * During the merge operation, this function locks 
      * the destination block using a mutex.
      */
-    void put(ImageBlock &b);
+    virtual void put(ImageBlock &b);
 
     /// Lock the image block (using an internal mutex)
     inline void lock() const { m_mutex.lock(); }

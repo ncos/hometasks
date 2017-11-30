@@ -108,6 +108,32 @@ public:
         return Color3f(1.0f);
     }
 
+    Point2f pixelFromVisiblePoint(Ray3f &ray, const Point3f &p) const {
+        Point3f p_hat = m_cameraToWorld.inverse() * p;
+        //std::cout << "\n\n\np_hat = \n" << p_hat << "\n--\n";
+        
+        Vector3f d_hat = (p_hat - Point3f(0, 0, 0)).normalized();
+        //std::cout << "d_hat = \n" << d_hat << "\n--\n";
+
+        Point3f nearP_05 = m_sampleToCamera * Point3f(0.5, 0.5, 0.0f);
+        Point3f nearP = d_hat * nearP_05.z() / d_hat.z();
+
+        //std::cout << "nearP = \n" << nearP << "\n--\n";
+        //std::cout << "nearP_05 = \n" << nearP_05 << "\n--\n";
+
+        Vector3f d = (m_cameraToWorld * Point3f(0, 0, 0) - p).normalized();
+        ray.o = p;
+        ray.d = d;
+        ray.mint = 0;
+        ray.maxt = m_farClip;
+        ray.update();
+
+        Point3f sample = m_sampleToCamera.inverse() * nearP;
+        //std::cout << "sample = \n" << sample << "\n--\n";
+
+        return Point2f(sample.x() * m_outputSize.x(), sample.y() * m_outputSize.y());
+    }
+
     void addChild(NoriObject *obj) {
         switch (obj->getClassType()) {
             case EReconstructionFilter:

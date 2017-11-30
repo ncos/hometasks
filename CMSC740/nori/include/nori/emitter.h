@@ -38,6 +38,10 @@ public:
     virtual Color3f eval(const Intersection &its, const Vector3f &d) const {
         return Color3f(0.0f);
     };
+
+    virtual Color3f eval(const Normal3f &n, const Vector3f &d) const {
+        return Color3f(0.0f);
+    };
 };
 
 NORI_NAMESPACE_END

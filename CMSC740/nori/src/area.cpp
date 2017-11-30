@@ -15,6 +15,11 @@ public:
         return this->m_radiance;
     }
 
+    Color3f eval(const Normal3f &n, const Vector3f &d) const {
+        if (n.dot(d) <= 0) return Color3f(0.0f);
+        return this->m_radiance;
+    }
+
     std::string toString() const {
         return "AreaLight[]";
     }

@@ -63,6 +63,8 @@ public:
     /// Return the camera's reconstruction filter in image space
     const ReconstructionFilter *getReconstructionFilter() const { return m_rfilter; }
 
+    virtual Point2f pixelFromVisiblePoint(Ray3f &ray, const Point3f &p) const = 0;
+
     /**
      * \brief Return the type of object (i.e. Mesh/Camera/etc.) 
      * provided by this instance

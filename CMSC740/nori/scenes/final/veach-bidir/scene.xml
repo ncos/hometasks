@@ -3,11 +3,10 @@
 <scene>
 	<!-- Independent sample generator, 64 samples per pixel -->
 	<sampler type="independent">
-		<integer name="sampleCount" value="64"/>
+		<integer name="sampleCount" value="32"/>
 	</sampler>
 
-	<!-- Use the path tracer with multiple importance sampling -->
-	<integrator type="bdpt" >
+	<integrator type="bdpt_better" >
 		<integer name="maxDepth" value="7" />
 	</integrator>
 
@@ -24,6 +23,7 @@
 		<integer name="width" value="1024"/>
 		<integer name="height" value="1024"/>
 	</camera>
+
 
 	<mesh type="obj" >
 		<string name="filename" value="models/Mesh007.obj" />
@@ -45,7 +45,6 @@
 			<color name="albedo" value="0.5, 0.5, 0.5"/>
 		</bsdf>
 	</mesh>
-
 	<mesh type="obj" >		
 		<string name="filename" value="models/sphere.obj"/>
 		<transform name="toWorld" >
@@ -55,7 +54,7 @@
 			<color name="albedo" value="0.5, 0.5, 0.5"/>
 		</bsdf>
 		<emitter type="area" >
-			<color name="radiance" value="52.3258, 52.3258, 52.3258"/>
+			<color name="radiance" value="523.258, 523.258, 523.258"/>
 		</emitter>
 	</mesh>
 	<mesh type="obj" >
@@ -67,7 +66,7 @@
 			<color name="albedo" value="0.5, 0.5, 0.5"/>
 		</bsdf>
 		<emitter type="area" >
-			<color name="radiance" value="1204.82, 860.584, 619.621"/>
+			<color name="radiance" value="12048.2, 8605.84, 6196.21"/>
 		</emitter>
 	</mesh>
 	<mesh type="obj" >
@@ -94,11 +93,7 @@
 	</mesh>
 
 
-
-
-
-
-
+	<!-- Wall Lamp Cylinder -->
 	<mesh type="obj" >
 		<string name="filename" value="models/Mesh008.obj" />
 		<transform name="toWorld" >
@@ -108,6 +103,8 @@
 			<color name="albedo" value="0.5, 0.5, 0.5"/>
 		</bsdf>
 	</mesh>
+
+	<!-- Egg -->
 	<mesh type="obj" >
 		<string name="filename" value="models/Mesh002.obj" />
 		<transform name="toWorld" >
@@ -118,6 +115,7 @@
 			<float name="intIOR" value="1.5"/>
 		</bsdf>
 	</mesh>
+
 	<mesh type="obj" >
 		<string name="filename" value="models/Mesh011.obj" />
 		<transform name="toWorld" >
@@ -171,7 +169,7 @@
 			<matrix value="-1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1"/>
 		</transform>
 		<bsdf type="diffuse">
-			<color name="albedo" value="0.9, 0.9, 0.9"/>
+			<color name="albedo" value="0.5, 0.5, 0.5"/>
 		</bsdf>
 	</mesh>
 	<mesh type="obj" >
@@ -180,7 +178,7 @@
 			<matrix value="1 0 0 0 0 1 0 0 0 0 1 8 0 0 0 1"/>
 		</transform>
 		<bsdf type="diffuse">
-			<color name="albedo" value="0.9, 0.9, 0.9"/>
+			<color name="albedo" value="0.5, 0.5, 0.5"/>
 		</bsdf>
 	</mesh>
 	<mesh type="obj" >
@@ -189,7 +187,7 @@
 			<matrix value="1 0 0 0 0 1 0 0 0 0 1 -8 0 0 0 1"/>
 		</transform>
 		<bsdf type="diffuse">
-			<color name="albedo" value="0.9, 0.9, 0.9"/>
+			<color name="albedo" value="0.5, 0.5, 0.5"/>
 		</bsdf>
 	</mesh>
 	<mesh type="obj" >
@@ -198,7 +196,7 @@
 			<matrix value="1 0 0 0 0 1 0 8 0 0 1 0 0 0 0 1"/>
 		</transform>
 		<bsdf type="diffuse">
-			<color name="albedo" value="0.9, 0.9, 0.9"/>
+			<color name="albedo" value="0.5, 0.5, 0.5"/>
 		</bsdf>
 	</mesh>
 	<mesh type="obj" >
@@ -207,7 +205,7 @@
 			<matrix value="-1 0 0 -8 0 -1 0 8 0 0 -1 0 0 0 0 1"/>
 		</transform>
 		<bsdf type="diffuse">
-			<color name="albedo" value="0.9, 0.9, 0.9"/>
+			<color name="albedo" value="0.5, 0.5, 0.5"/>
 		</bsdf>
 	</mesh>
 </scene>

@@ -47,13 +47,15 @@ void Mesh::activate() {
     this->m_pdf.normalize();
 }
 
-void Mesh::samplePosition(const Point2f& sample, Point3f& p, Normal3f& n) const {
-    uint32_t index = (uint32_t)this->m_pdf.sample(sample.y());
+void Mesh::samplePosition(const Point2f& sample_, Point3f& p, Normal3f& n) const {
+    Point2f sample = sample_;
+    uint32_t index = (uint32_t)this->m_pdf.sampleReuse(sample.x());
 
     // Random point
     Point2f bary = Warp::squareToUniformTriangle(sample);
     uint32_t i0 = this->m_F(0, index), i1 = this->m_F(1, index), i2 = this->m_F(2, index);
     const Point3f p0 = this->m_V.col(i0), p1 = this->m_V.col(i1), p2 = this->m_V.col(i2);
+
 	p = p0 + (p1 - p0) * bary.x() + (p2 - p0) * bary.y();
 
     // Normal

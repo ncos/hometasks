@@ -86,7 +86,9 @@ public:
         float F = fresnel(Wh.dot(Wi), this->m_extIOR, this->m_intIOR);
         float G = this->G1(Wi, Wh) * this->G1(Wo, Wh);
 
-        return this->m_kd / M_PI + this->m_ks * (D * F * G) / (4 * cos_th_i * cos_th_o * cos_th_h);
+        Color3f ret = this->m_kd / M_PI + this->m_ks * (D * F * G) / (4 * cos_th_i * cos_th_o * cos_th_h);
+        if (ret.isValid()) return ret;
+        return Color3f{0.0f};
     }
 
     /// Evaluate the sampling density of \ref sample() wrt. solid angles
@@ -96,8 +98,9 @@ public:
 
         Vector3f Wh = (bRec.wi + bRec.wo).normalized();
         float D = Warp::squareToBeckmannPdf(Wh, this->m_alpha);
-        return this->m_ks * D / (4 * Wh.dot(bRec.wo)) +
+        float pdf_ = this->m_ks * D / (4 * Wh.dot(bRec.wo)) +
                (1 - this->m_ks) * Warp::squareToCosineHemispherePdf(bRec.wo);
+        return (pdf_ > 0) ? pdf_ : 0;
     }
 
     /// Sample the BRDF
