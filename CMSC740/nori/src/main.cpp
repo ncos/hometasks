@@ -86,7 +86,9 @@ static void render(Scene *scene, const std::string &filename) {
     nanogui::init();
     NoriScreen *screen_light = new NoriScreen(*globalLightBlock);
     NoriScreen *screen = new NoriScreen(result);
-    //NoriScreen *screen_combined = new NoriScreen(result_combined);
+    NoriScreen *screen_combined = new NoriScreen(result_combined);
+
+    int samplecount = scene->getSampler()->getSampleCount();
 
     /* Do the following in parallel and asynchronously */
     std::thread render_thread([&] {
@@ -129,8 +131,19 @@ static void render(Scene *scene, const std::string &filename) {
         tbb::parallel_for(range, map);
 
         /* BDPT frame join */
-        //result_combined.put(result);
+        for (int y = 0; y < (int)outputSize.y(); ++y) {
+            for (int x = 0; x < (int)outputSize.x(); ++x) {
+                Color4f res_s = result.coeffRef(y, x);
+                Color3f value_s = res_s.head<3>() / res_s[3];
+                result_combined.put_special(Point2f{x, y}, value_s);
+                Color4f res_l = globalLightBlock->coeffRef(y, x);
+                Color3f value_l = res_l.head<3>();
+                result_combined.put_special(Point2f{x, y}, value_l);
+            }
+        }
+        
         //result_combined.put(*globalLightBlock);
+        //result_combined.put(result);
         cout << "done. (took " << timer.elapsedString() << ")" << endl;
     });
 
@@ -143,10 +156,9 @@ static void render(Scene *scene, const std::string &filename) {
 
     delete screen;
     delete screen_light;
-    //delete screen_combined;
+    delete screen_combined;
     //nanogui::shutdown();
 
-    int samplecount = scene->getSampler()->getSampleCount();
 
     /* Now turn the rendered image block into
        a properly normalized bitmap */
@@ -166,12 +178,22 @@ static void render(Scene *scene, const std::string &filename) {
     size_t lastdot2 = outputName2.find_last_of(".");
     if (lastdot2 != std::string::npos)
         outputName2.erase(lastdot2, std::string::npos);
-    outputName2 += "_combined_" + std::to_string(samplecount) + ".exr";
+    outputName2 += "_light_" + std::to_string(samplecount) + ".exr";
 
     
     std::unique_ptr<Bitmap> bitmap2(globalLightBlock->toBitmap());
     /* Save using the OpenEXR format */
     bitmap2->save(outputName2);
+
+    std::string outputName3 = filename;
+    size_t lastdot3 = outputName3.find_last_of(".");
+    if (lastdot3 != std::string::npos)
+        outputName3.erase(lastdot3, std::string::npos);
+    outputName3 += "_combined_" + std::to_string(samplecount) + ".exr";
+
+    std::unique_ptr<Bitmap> bitmap3(result_combined.toBitmap());
+    /* Save using the OpenEXR format */
+    bitmap3->save(outputName3);
 
     delete globalLightBlock;
 }

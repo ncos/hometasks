@@ -3,7 +3,7 @@
 <scene>
 	<!-- Independent sample generator, 64 samples per pixel -->
 	<sampler type="independent">
-		<integer name="sampleCount" value="2048"/>
+		<integer name="sampleCount" value="512"/>
 	</sampler>
 
 	<integrator type="path"/>

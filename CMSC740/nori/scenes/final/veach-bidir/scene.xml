@@ -3,7 +3,7 @@
 <scene>
 	<!-- Independent sample generator, 64 samples per pixel -->
 	<sampler type="independent">
-		<integer name="sampleCount" value="32"/>
+		<integer name="sampleCount" value="16"/>
 	</sampler>
 
 	<integrator type="bdpt_better" >

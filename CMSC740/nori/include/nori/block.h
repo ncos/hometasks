@@ -91,9 +91,7 @@ public:
     /// Record a sample with the given position and radiance value
     virtual void put(const Point2f &pos, const Color3f &value);
 
-    virtual void put_special(const Point2f &pos, const Color3f &value) {
-        this->put(pos, value);
-    }
+    virtual void put_special(const Point2f &pos, const Color3f &value);
 
     /**
      * \brief Merge another image block into this one

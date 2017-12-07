@@ -101,6 +101,33 @@ void ImageBlock::put(const Point2f &_pos, const Color3f &value) {
         for (int x=bbox.min.x(), xr=0; x<=bbox.max.x(); ++x, ++xr) 
             coeffRef(y, x) += Color4f(value) * m_weightsX[xr] * m_weightsY[yr];
 }
+
+
+void ImageBlock::put_special(const Point2f &_pos, const Color3f &value) {
+    if (!value.isValid()) {
+        /* If this happens, go fix your code instead of removing this warning ;) */
+        cerr << "Integrator: computed an invalid radiance value: " << value.toString() << endl;
+        return;
+    }
+
+    /* Convert to pixel coordinates within the image block */
+    Point2f pos(
+        _pos.x() - 0.5f - (m_offset.x() - m_borderSize),
+        _pos.y() - 0.5f - (m_offset.y() - m_borderSize)
+    );
+
+    if (pos.y() < 0 || pos.x() < 0 || pos.y() >= this->m_size.y() || pos.x() >= this->m_size.x())
+        return;
+
+    Color4f new_value = Color4f(value);
+    new_value[3] = 0;
+
+    this->lock();
+    coeffRef(pos.y(), pos.x()) += new_value;
+    coeffRef(pos.y(), pos.x())[3] = 1;
+    this->unlock();
+}
+
     
 void ImageBlock::put(ImageBlock &b) {
     Vector2i offset = b.getOffset() - m_offset +
